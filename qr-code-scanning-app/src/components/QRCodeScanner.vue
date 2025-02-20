@@ -14,13 +14,8 @@ export default {
   },
   methods: {
     onDecode(content) {
-      try {
-        const jsonData = JSON.parse(content);
-        this.$emit('json-extracted', jsonData);
-      } catch (error) {
-        console.error('Invalid JSON:', error);
-        alert('Invalid JSON detected in QR code.');
-      }
+      console.log('Decoded content:', content); // Debugging log
+      this.$emit('json-extracted', content); // Emit raw content without parsing
     },
     onInit(promise) {
       promise.then(() => {
