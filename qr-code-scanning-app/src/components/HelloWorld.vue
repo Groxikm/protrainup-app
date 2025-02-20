@@ -36,7 +36,7 @@ export default {
       this.scannerActive = true;
     },
     handleJsonExtracted(data) {
-      // console.log('Extracted QR code data:', data); // for debug
+      console.log('Extracted QR code data:', data);
       try {
         this.jsonData = JSON.parse(data);
       } catch (error) {

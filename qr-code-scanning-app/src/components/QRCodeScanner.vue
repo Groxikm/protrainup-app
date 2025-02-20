@@ -16,7 +16,7 @@ export default {
     onDetect(detectedCodes) {
       detectedCodes.forEach((code) => {
         console.log('Detected QR code content:', code.rawValue);
-        // alert('Detected QR code content: ' + code.rawValue); // for debugging
+        alert('Detected QR code content: ' + code.rawValue); // for debugging
         this.$emit('json-extracted', code.rawValue);
       });
     },
