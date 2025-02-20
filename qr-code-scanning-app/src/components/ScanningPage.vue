@@ -23,7 +23,7 @@ export default {
     return {
       scannerActive: false,
       jsonData: null
-    }
+    };
   },
   computed: {
     formattedJsonData() {
@@ -32,20 +32,20 @@ export default {
   },
   methods: {
     showScanner() {
-      console.log('Scanner activated'); // Debugging log
+      console.log('Scanner activated');
       this.scannerActive = true;
     },
     handleJsonExtracted(data) {
-      console.log('Extracted QR code data:', data); // Debugging log
+      // console.log('Extracted QR code data:', data); // for debug
       try {
-        this.jsonData = JSON.parse(data); // Parse JSON data if valid
+        this.jsonData = JSON.parse(data);
       } catch (error) {
-        this.jsonData = {error: 'Invalid JSON'}; // Handle invalid JSON
+        this.jsonData = {error: 'Invalid JSON'};
       }
-      this.scannerActive = false; // Hide scanner after extraction
+      this.scannerActive = false;
     }
   }
-}
+};
 </script>
 
 <style scoped>
