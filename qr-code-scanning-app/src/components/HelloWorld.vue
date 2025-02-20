@@ -1,37 +1,39 @@
 <template>
   <div class="hello">
-    <ButtonComponent label="Click Me" />
+    <ButtonComponent label="Scan QR Code" @activate-scanner="showScanner" />
+    <QRCodeScanner v-if="scannerActive" @json-extracted="handleJsonExtracted" />
+    <pre>{{ jsonData }}</pre>
   </div>
 </template>
 
 <script>
 import ButtonComponent from './ButtonComponent.vue';
+import QRCodeScanner from './QRCodeScanner.vue';
 
 export default {
   name: 'HelloWorld',
   components: {
-    ButtonComponent
+    ButtonComponent,
+    QRCodeScanner
   },
-  props: {
-    msg: String
+  data() {
+    return {
+      scannerActive: false,
+      jsonData: null
+    }
+  },
+  methods: {
+    showScanner() {
+      this.scannerActive = true;
+    },
+    handleJsonExtracted(data) {
+      this.jsonData = data;
+      this.scannerActive = false;
+    }
   }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
+/* Additional styling if needed */
 </style>

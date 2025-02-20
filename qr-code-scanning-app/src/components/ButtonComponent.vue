@@ -1,5 +1,5 @@
 <template>
-  <button @click="handleClick" class="btn">{{ label }}</button>
+  <button @click="activateScanner" class="btn">{{ label }}</button>
 </template>
 
 <script>
@@ -8,12 +8,12 @@ export default {
   props: {
     label: {
       type: String,
-      default: 'Click Me'
+      default: 'Scan QR Code'
     }
   },
   methods: {
-    handleClick() {
-      alert('Button clicked!');
+    activateScanner() {
+      this.$emit('activate-scanner');
     }
   }
 }
