@@ -1,64 +1,114 @@
 <template>
   <div class="ScanQRPage">
-    <ButtonComponent label="Scan QR Code" @activate-scanner="showScanner" />
-    <QRCodeScanner v-if="scannerActive" @json-extracted="handleJsonExtracted" />
-    <div v-if="jsonData" class="json-display">
-      <h3>Scanned QR Code Data:</h3>
-      <pre>{{ formattedJsonData }}</pre>
+    <!-- Camera box with border, automatically active on component creation -->
+    <div v-if="scannerActive" class="camera-box">
+      <QRCodeScanner @json-extracted="handleJsonExtracted" />
+    </div>
+
+
+    <div v-if="user" class="json-display">
+      <h3>User Details:</h3>
+      <p><strong>Name:</strong> {{ user.name }}</p>
+      <p><strong>Surname:</strong> {{ user.surname }}</p>
+      <p><strong>Login:</strong> {{ user.login }}</p>
+      <p><strong>Password:</strong> {{ user.password }}</p>
+      <p><strong>Visit Frequency:</strong> {{ user.visit_frequency }}</p>
+      <p><strong>Valid Until:</strong> {{ user.valid_due }}</p>
+    </div>
+
+
+    <div v-if="errorMessage" class="error-message">
+      {{ errorMessage }}
     </div>
   </div>
 </template>
 
 <script>
-import ButtonComponent from './ButtonComponent.vue';
 import QRCodeScanner from './QRCodeScanner.vue';
 
 export default {
   name: 'ScanPage',
   components: {
-    ButtonComponent,
     QRCodeScanner
   },
   data() {
     return {
-      scannerActive: false,
-      jsonData: null
+      scannerActive: true, // Initialize scanner immediately
+      user: null, // Will hold the parsed user data
+      errorMessage: ''
     };
   },
-  computed: {
-    formattedJsonData() {
-      return JSON.stringify(this.jsonData, null, 2);
-    }
-  },
   methods: {
-    showScanner() {
-      console.log('Scanner activated');
-      this.scannerActive = true;
-    },
     handleJsonExtracted(data) {
       console.log('Extracted QR code data:', data);
       try {
-        this.jsonData = JSON.parse(data);
+
+        const parsedData = JSON.parse(data);
+
+
+        if (this.isValidUser(parsedData)) {
+          this.user = parsedData;
+          this.errorMessage = '';
+        } else {
+          throw new Error('Invalid user data structure');
+        }
       } catch (error) {
-        this.jsonData = {error: 'Invalid JSON'};
+        this.errorMessage = error.message || 'Failed to parse JSON';
+        this.user = null;
       }
-      this.scannerActive = false;
+      this.scannerActive = false; // Close scanner after processing
+    },
+    isValidUser(data) {
+      // Check if the data matches expected structure
+      return data.name && data.surname && data.login &&
+             typeof data.password === 'string' &&
+             typeof data.visit_frequency === 'number' &&
+             data.valid_due;
     }
   }
 };
 </script>
 
 <style scoped>
+.ScanQRPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* Camera box styling */
+.camera-box {
+  width: 100%;
+  max-width: 400px;
+  border: 2px solid #26a69a;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* User details display styling */
 .json-display {
   margin-top: 20px;
   background-color: #f5f5f5;
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
 }
 
-pre {
-  font-size: 1rem;
-  line-height: 1.5;
+.error-message {
+  color: red;
+  font-weight: bold;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .camera-box {
+    max-width: 100%;
+  }
 }
 </style>

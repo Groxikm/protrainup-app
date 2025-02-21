@@ -29,9 +29,5 @@ export default {
 </script>
 
 <style scoped>
-.qr-code-scanner {
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-}
+
 </style>
