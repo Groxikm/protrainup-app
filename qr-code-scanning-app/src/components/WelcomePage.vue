@@ -10,8 +10,6 @@
 </template>
 
 <script>
-import { API_URL } from '../settings';
-
 export default {
   data() {
     return {
@@ -22,21 +20,14 @@ export default {
   methods: {
     async handleLogin() {
       try {
-        const response = await fetch(`${API_URL}/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: this.username,
-            password: this.password,
-          }),
-        });
+        const response = await fetch(
+          `https://example.com/api/login?username=${this.username}&password=${this.password}`
+        );
 
         const data = await response.json();
 
-        if (data.name) {
-          this.$router.push({ name: 'welcome', query: { initials: data.name } });
+        if (data.initials) {
+          this.$router.push({ name: 'welcome', query: { initials: data.initials } });
         } else {
           alert('Login failed');
         }

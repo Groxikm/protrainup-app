@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div class="ScanQRPage">
     <ButtonComponent label="Scan QR Code" @activate-scanner="showScanner" />
     <QRCodeScanner v-if="scannerActive" @json-extracted="handleJsonExtracted" />
     <div v-if="jsonData" class="json-display">
@@ -14,7 +14,7 @@ import ButtonComponent from './ButtonComponent.vue';
 import QRCodeScanner from './QRCodeScanner.vue';
 
 export default {
-  name: 'HelloWorld',
+  name: 'ScanPage',
   components: {
     ButtonComponent,
     QRCodeScanner
