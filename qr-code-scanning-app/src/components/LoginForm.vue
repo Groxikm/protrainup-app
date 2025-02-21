@@ -28,7 +28,7 @@ export default {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            login: this.username,  // Make sure this matches your flask backend expectations
+            login: this.username,
             password: this.password,
           }),
         });
@@ -36,8 +36,16 @@ export default {
         const data = await response.json();
 
         if (response.ok) {
-          // Assuming the success response contains user's name
-          this.$router.push({ name: 'welcome', query: { initials: data.name } });
+          // Pass all necessary data to the WelcomePage
+          this.$router.push({
+            name: 'welcome',
+            query: {
+              id: data.id,
+              name: data.name,
+              surname: data.surname,
+              valid_due: data.valid_due,
+            }
+          });
         } else {
           alert(data.message || 'Login failed');
         }
