@@ -25,6 +25,7 @@
 </template>
 
 <script>
+import { API_URL } from '../settings';
 export default {
   data() {
     return {
@@ -40,7 +41,13 @@ export default {
   methods: {
     async findUser() {
       try {
-        const response = await fetch(`http://localhost:5000/api/find-user?&name=${encodeURIComponent(this.query.name)}&surname=${encodeURIComponent(this.query.surname)}`);
+        const response = await fetch(`${API_URL}/api/find-user-by-name-surname?&name=${encodeURIComponent(this.query.name)}&surname=${encodeURIComponent(this.query.surname)}`,
+        {
+                method: 'GET',
+                headers: {
+                    'accessToken': localStorage.getItem('acc_token'),
+                }
+            });
 
         if (!response.ok) {
           throw new Error('User not found');

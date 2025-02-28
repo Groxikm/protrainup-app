@@ -3,6 +3,7 @@ import LoginForm from './components/LoginForm.vue';
 import WelcomePage from './components/WelcomePage.vue';
 import AdminPage from "@/components/AdminPage.vue";
 import ScanPage from "@/components/ScanPage.vue";
+// import RegistrationLogPage from "@/components/RegistrationLogPage.vue";
 
 const routes = [
   { path: '/', component: LoginForm },

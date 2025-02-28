@@ -34,8 +34,10 @@ export default {
         });
 
         const data = await response.json();
-
+        //console.log(data);
+        localStorage.setItem("acc_token", data.accessToken);
         if (response.ok) {
+
           // Pass all necessary data to the WelcomePage
           this.$router.push({
             name: 'welcome',
@@ -43,7 +45,7 @@ export default {
               id: data.id,
               name: data.name,
               surname: data.surname,
-              valid_due: data.valid_due,
+              valid_due: data.valid_due
             }
           });
         } else {

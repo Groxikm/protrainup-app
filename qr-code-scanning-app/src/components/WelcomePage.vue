@@ -1,8 +1,10 @@
 <template>
-  <div class="welcome-page">
-    <h2>Welcome, {{ user.name }} {{ user.surname }}!</h2>
+  <div class="welcome-page container">
+    <div class="header">
+      <h2>Welcome, {{ user.name }} {{ user.surname }}!</h2>
+    </div>
 
-    <p>
+    <p class="validity">
       <strong>Valid Until: </strong>
       <span :class="{ expired: isExpired, valid: !isExpired }">
         {{ user.valid_due }}
@@ -26,7 +28,6 @@ export default {
   },
   data() {
     return {
-      // Extract user details passed via query parameters.
       user: {
         id: this.$route.query.id || "",
         name: this.$route.query.name || "",
@@ -36,7 +37,6 @@ export default {
     };
   },
   computed: {
-    // Convert the valid_due string from format "dd/mm/yy HH:MM:SS" into a Date object.
     parsedValidDue() {
       if (!this.user.valid_due) return null;
       const parts = this.user.valid_due.split(" ");
@@ -45,11 +45,10 @@ export default {
       const timeParts = parts[1].split(":");
       if (dateParts.length !== 3 || timeParts.length !== 3) return null;
 
-      // Extract day, month, and year (assume two-digit years belong to the 2000s)
       const day = parseInt(dateParts[0], 10);
       const month = parseInt(dateParts[1], 10) - 1;
       let year = parseInt(dateParts[2], 10);
-      if (year < 100) { // Adjust two-digit year
+      if (year < 100) {
         year += 2000;
       }
       const hour = parseInt(timeParts[0], 10);
@@ -57,7 +56,6 @@ export default {
       const second = parseInt(timeParts[2], 10);
       return new Date(year, month, day, hour, minute, second);
     },
-    // Determine if the valid due date is in the past.
     isExpired() {
       if (!this.parsedValidDue) return false;
       const now = new Date();
@@ -70,23 +68,54 @@ export default {
 <style scoped>
 .welcome-page {
   text-align: center;
-  max-width: 600px;
+  max-width: 800px;
   margin: 40px auto;
+  background-color: #f5f5f5; /* Light background for contrast */
   padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
 }
 
-.welcome-page h2 {
+.header h2 {
   font-size: 32px;
   color: #26a69a;
-  margin-bottom: 10px;
+  margin-bottom: 15px; /* Spacing for better separation */
 }
 
-.welcome-page p {
+.validity {
   font-size: 18px;
   margin-bottom: 20px;
 }
 
-/* If the valid_until date is expired, show red text; otherwise, green */
+.qr-code-container {
+  margin-top: 30px;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: white; /* Contrasting background for QR code area */
+}
+
+.footer-note {
+  margin-top: 30px;
+}
+
+.btn-cta-primary {
+  background-color: #26a69a;
+  border: 2px solid #26a69a;
+  color: white;
+  padding: 10px 20px;
+  font-weight: bold;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-cta-primary:hover {
+  background-color: #e9553b;
+  border: 2px solid #e9553b;
+  color: white;
+}
 .expired {
   color: red;
   font-weight: bold;
@@ -95,9 +124,5 @@ export default {
 .valid {
   color: green;
   font-weight: bold;
-}
-
-.qr-code-container {
-  margin-top: 30px;
 }
 </style>
