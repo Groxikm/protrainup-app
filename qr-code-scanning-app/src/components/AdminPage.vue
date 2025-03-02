@@ -1,100 +1,162 @@
 <template>
-  <div>
-    <header>
-      <h1>Welcome, {{ admin.name }} {{ admin.surname }} from {{ admin.city }}</h1>
-    </header>
-    <nav>
+    <div>
+      <h2>Manage Users</h2>
       <button @click="currentComponent = 'CreateUser'">Create User</button>
       <button @click="currentComponent = 'FindUser'">Find User</button>
+      <button @click="currentComponent = 'ChangeUser'">Update User</button>
+      <button @click="currentComponent = 'DeleteUser'">Delete User</button>
       <button @click="currentComponent = 'ScanPage'">Scan User QR</button>
-    </nav>
-    <component :is="currentComponent" />
-  </div>
+      <button @click="currentComponent = 'RegistrationLogPage'">Registration Log</button>
+    </div>
+
+    <component :is="currentComponent"/>
 </template>
 
 <script>
+import axios from 'axios';
 import CreateUser from './CreateUser.vue';
 import FindUser from './FindUser.vue';
+import ChangeUser from './ChangeUser.vue';
+import DeleteUser from './DeleteUser.vue';
 import ScanPage from './ScanPage.vue';
+import RegistrationLogPage from "./RegistrationLogPage.vue";
 
 export default {
   components: {
     CreateUser,
     FindUser,
-    ScanPage
+    ChangeUser,
+    DeleteUser,
+    ScanPage,
+    RegistrationLogPage
   },
   data() {
     return {
-      currentComponent: 'CreateUser', // Default component
-      admin: {
-        name: 'AdminName',
-        surname: 'AdminSurname',
-        city: 'Wroclaw'
-      }
+      userId: '',
+      attempts: [],
+      latestDateId: null,
+      hasMore: true,
+      currentComponent: 'CreateUser'
     };
+  },
+  methods: {
+    async fetchAttempts() {
+      if (!this.userId) return;
+      try {
+        const response = await axios.get(`/api/user-attempts`, {
+          params: {user_id: this.userId, latest_date_id: this.latestDateId}
+        });
+        if (response.data.length < 10) {
+          this.hasMore = false;
+        }
+        if (response.data.length > 0) {
+          this.latestDateId = response.data[response.data.length - 1].id;
+          this.attempts.push(...response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching attempts:", error);
+      }
+    },
+    loadMore() {
+      this.fetchAttempts();
+    },
+    resetData() {
+      this.attempts = [];
+      this.latestDateId = null;
+      this.hasMore = true;
+      this.fetchAttempts();
+    }
   }
-}
+};
 </script>
 
 <style scoped>
-/*
- * Admin Page Styles
- * This CSS is dedicated to the Admin page component with styling inspired by the Velocity template.
- */
-
-/* ======= Base Styles ======= */
-body {
-  font-family: 'Roboto', Arial, sans-serif; /* Matches the font from the template */
-  color: #444; /* Darker color for text */
-  font-size: 16px;
-  background-color: #f5f5f5; /* Light background */
-  margin: 0;
-  padding: 20px; /* Global padding */
+/* Container for the entire component */
+div {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
 }
 
-h1 {
-  font-size: 36px; /* Larger header font for welcoming */
-  color: #26a69a;  /* Color from the template color scheme */
-  margin-bottom: 1rem;
+/* Heading */
+h2 {
+  font-size: 28px;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: bold;
 }
 
-nav {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  background-color: white; /* White background for nav */
-  border-radius: 8px; /* Round edges */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+/* Button container */
+.button-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 30px;
 }
 
+/* General button styling */
 button {
-  padding: 10px 20px;
-  font-size: 14px;
+  background-color: #3498db; /* Blue */
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s ease; /* Smooth transition */
-  border: none; /* Remove default border */
-  border-radius: 4px; /* Rounded corners */
-  background-color: #26a69a; /* Admin theme color */
-  color: white; /* Button text color */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Hover effect for buttons */
 button:hover {
-  background-color: #1d9a87; /* Darken the button on hover */
+  background-color: #2980b9; /* Darker blue */
+  transform: translateY(-2px);
 }
 
-button:focus {
-  outline: none; /* Remove outline on focus */
+/* Active effect for buttons */
+button:active {
+  transform: translateY(0);
 }
 
-/* ======= Responsive Styles ======= */
+/* Specific button colors for differentiation */
+button:nth-child(1) {
+  background-color: #27ae60; /* Green for Create User */
+}
+
+button:nth-child(2) {
+  background-color: #e67e22; /* Orange for Find User */
+}
+
+button:nth-child(3) {
+  background-color: #9b59b6; /* Purple for Update User */
+}
+
+button:nth-child(4) {
+  background-color: #e74c3c; /* Red for Delete User */
+}
+
+button:nth-child(5) {
+  background-color: #1abc9c; /* Teal for Scan User QR */
+}
+
+button:nth-child(6) {
+  background-color: #34495e; /* Dark blue for Registration Log */
+}
+
+/* Responsive design for smaller screens */
 @media (max-width: 768px) {
-  h1 {
-    font-size: 28px; /* Smaller font size for mobile */
+  .button-container {
+    flex-direction: column;
+    align-items: center;
   }
 
   button {
-    width: 100%; /* Full width buttons on small screens */
-    margin-bottom: 1rem; /* Space between buttons */
+    width: 100%;
+    margin-bottom: 10px;
   }
 }
-
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="welcome-page container">
+  <div class="welcome-page container" :class="{ expired: isExpired }">
     <div class="header">
       <h2>Welcome, {{ user.name }} {{ user.surname }}!</h2>
     </div>
@@ -15,6 +15,7 @@
       <h3>Your ID as QR Code:</h3>
       <qrcode-vue :value="user.id" :size="200" level="M" />
     </div>
+
   </div>
 </template>
 
@@ -39,22 +40,16 @@ export default {
   computed: {
     parsedValidDue() {
       if (!this.user.valid_due) return null;
-      const parts = this.user.valid_due.split(" ");
-      if (parts.length < 2) return null;
-      const dateParts = parts[0].split("/");
-      const timeParts = parts[1].split(":");
-      if (dateParts.length !== 3 || timeParts.length !== 3) return null;
 
-      const day = parseInt(dateParts[0], 10);
-      const month = parseInt(dateParts[1], 10) - 1;
-      let year = parseInt(dateParts[2], 10);
-      if (year < 100) {
-        year += 2000;
-      }
-      const hour = parseInt(timeParts[0], 10);
-      const minute = parseInt(timeParts[1], 10);
-      const second = parseInt(timeParts[2], 10);
-      return new Date(year, month, day, hour, minute, second);
+      // Parse the date string (assuming format: "DD/MM/YYYY HH:mm:ss")
+      const [datePart, timePart] = this.user.valid_due.split(" ");
+      if (!datePart || !timePart) return null;
+
+      const [day, month, year] = datePart.split("/").map(Number);
+      const [hour, minute, second] = timePart.split(":").map(Number);
+
+      // Create a Date object (month is 0-based in JavaScript)
+      return new Date(year, month - 1, day, hour, minute, second);
     },
     isExpired() {
       if (!this.parsedValidDue) return false;
@@ -74,6 +69,7 @@ export default {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Soft shadow */
+  transition: background-color 0.3s; /* Smooth transition */
 }
 
 .header h2 {
@@ -116,9 +112,11 @@ export default {
   border: 2px solid #e9553b;
   color: white;
 }
+
 .expired {
   color: red;
   font-weight: bold;
+  background-color: rgba(255, 0, 0, 0.1); /* Light red background */
 }
 
 .valid {

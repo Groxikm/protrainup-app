@@ -1,25 +1,19 @@
 <template>
-  <div class="container">
-    <label for="userId">User ID:</label>
-    <input v-model="userId" id="userId" placeholder="Enter User ID" />
-    <button @click="fetchAttempts">Search</button>
-
-    <table v-if="attempts.length" class="attempts-table">
+  <div>
+    <input v-model="userId" placeholder="Enter user ID" @change="resetData" />
+    <table>
       <thead>
         <tr>
-          <th>Date</th>
-          <th>Location</th>
+          <th>Registration Date</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="attempt in attempts" :key="attempt.id">
-          <td>{{ attempt.date }}</td>
-          <td>{{ attempt.location }}</td>
+          <td>{{ attempt.registration_date }}</td>
         </tr>
       </tbody>
     </table>
-
-    <button v-if="hasMore" @click="fetchMoreAttempts">Load More</button>
+    <button @click="loadMore" v-if="hasMore">Load More</button>
   </div>
 </template>
 
@@ -29,47 +23,43 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      userId: localStorage.getItem('userId') || '',
+      userId: '',
       attempts: [],
       latestDateId: null,
-      hasMore: false,
+      hasMore: true,
     };
   },
   methods: {
     async fetchAttempts() {
       if (!this.userId) return;
-      localStorage.setItem('userId', this.userId);
-      this.attempts = [];
-      this.latestDateId = null;
-      await this.loadAttempts();
-    },
-    async fetchMoreAttempts() {
-      await this.loadAttempts();
-    },
-    async loadAttempts() {
       try {
-        const response = await axios.get('/api/find-user-reg-attempts', {
-          params: {
-            id: this.userId,
-            limit: 10,
-            latest_date_id: this.latestDateId,
-          },
+        const response = await axios.get(`/api/user-attempts`, {
+          params: { user_id: this.userId, latest_date_id: this.latestDateId }
         });
-
-        if (response.data.attempts.length) {
-          this.attempts = [...this.attempts, ...response.data.attempts];
-          this.latestDateId = response.data.latestDateId;
-          this.hasMore = response.data.attempts.length === 10;
-        } else {
+        if (response.data.length < 10) {
           this.hasMore = false;
         }
+        if (response.data.length > 0) {
+          this.latestDateId = response.data[response.data.length - 1].id;
+          this.attempts.push(...response.data);
+        }
       } catch (error) {
-        console.error('Error fetching attempts:', error);
+        console.error("Error fetching attempts:", error);
       }
     },
-  },
+    loadMore() {
+      this.fetchAttempts();
+    },
+    resetData() {
+      this.attempts = [];
+      this.latestDateId = null;
+      this.hasMore = true;
+      this.fetchAttempts();
+    }
+  }
 };
 </script>
+
 
 <style scoped>
 .container {
