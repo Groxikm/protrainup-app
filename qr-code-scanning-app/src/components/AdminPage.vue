@@ -9,7 +9,7 @@
       <button @click="currentComponent = 'RegistrationLogPage'">Registration Log</button>
     </div>
 
-    <component :is="currentComponent"/>
+    <component :is="currentComponent" @id-scanned="handleIdScanned"/>
 </template>
 
 <script>
@@ -40,6 +40,13 @@ export default {
     };
   },
   methods: {
+    handleIdScanned(scannedId) {
+      // Store the scanned ID for further processing
+      this.userId = scannedId;
+      console.log("Scanned ID received:", this.userId);
+      // Optionally, you could fetch attempts or any other action based on the scanned ID
+      this.fetchAttempts();
+    },
     async fetchAttempts() {
       if (!this.userId) return;
       try {
