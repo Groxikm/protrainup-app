@@ -2,7 +2,6 @@
   <div>
     <h2>Find User</h2>
     <form @submit.prevent="findUser">
-      <input v-model="query.id" placeholder="ID" />
       <input v-model="query.name" placeholder="Name" />
       <input v-model="query.surname" placeholder="Surname" />
       <button type="submit">Find User</button>
