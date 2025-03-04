@@ -6,7 +6,7 @@
       <input v-model="user.surname" placeholder="Surname" required />
       <input v-model="user.login" placeholder="Login" required />
       <input type="password" v-model="user.password" placeholder="Password" required />
-      <input type="number" v-model.number="user.visitFrequency" placeholder="Visit Frequency" required />
+      <input v-model="user.avatar_link" placeholder="Avatar Link" required />
       <input type="date" v-model="user.validDue" placeholder="Valid Due" required />
       <button type="submit">Submit</button>
     </form>
@@ -22,7 +22,7 @@ export default {
         surname: '',
         login: '',
         password: '',
-        visitFrequency: null,
+        avatar_link: '',
         validDue: ''
       }
     };

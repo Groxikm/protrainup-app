@@ -29,8 +29,8 @@ export default {
         const scannedData = detectedCodes[0].rawValue;
         console.log('Detected QR Code:', scannedData);
         if (scannedData) {
-          this.scannedId = scannedData; // Store the scanned ID
-          this.$emit('id-scanned', this.scannedId); // Emit the scanned ID to the parent
+          this.scannedId = scannedData;
+          this.$emit('id-scanned', this.scannedId);
         } else {
           alert('Invalid QR Code format!');
         }

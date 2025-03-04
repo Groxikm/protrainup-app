@@ -4,7 +4,6 @@
       <button @click="currentComponent = 'CreateUser'">Create User</button>
       <button @click="currentComponent = 'FindUser'">Find User</button>
       <button @click="currentComponent = 'ChangeUser'">Update User</button>
-      <button @click="currentComponent = 'DeleteUser'">Delete User</button>
       <button @click="currentComponent = 'ScanPage'">Scan User QR</button>
       <button @click="currentComponent = 'RegistrationLogPage'">Registration Log</button>
     </div>
@@ -17,7 +16,7 @@ import axios from 'axios';
 import CreateUser from './CreateUser.vue';
 import FindUser from './FindUser.vue';
 import ChangeUser from './ChangeUser.vue';
-import DeleteUser from './DeleteUser.vue';
+
 import ScanPage from './ScanPage.vue';
 import RegistrationLogPage from "./RegistrationLogPage.vue";
 
@@ -26,7 +25,6 @@ export default {
     CreateUser,
     FindUser,
     ChangeUser,
-    DeleteUser,
     ScanPage,
     RegistrationLogPage
   },
@@ -41,10 +39,8 @@ export default {
   },
   methods: {
     handleIdScanned(scannedId) {
-      // Store the scanned ID for further processing
       this.userId = scannedId;
       console.log("Scanned ID received:", this.userId);
-      // Optionally, you could fetch attempts or any other action based on the scanned ID
       this.fetchAttempts();
     },
     async fetchAttempts() {

@@ -31,8 +31,7 @@ export default {
   },
   methods: {
     updateUser() {
-      // API call to update user details
-      console.log("Updating user:", this.userId, this.newName, this.newSurname, this.newValidDue);
+
     }
   }
 };
