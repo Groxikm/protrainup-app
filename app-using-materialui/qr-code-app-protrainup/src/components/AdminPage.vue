@@ -5,7 +5,6 @@
       <button @click="currentComponent = 'FindUser'">Find User</button>
       <button @click="currentComponent = 'ChangeUser'">Update User</button>
       <button @click="currentComponent = 'ScanPage'">Scan User QR</button>
-      <button @click="currentComponent = 'RegistrationLogPage'">Registration Log</button>
     </div>
 
     <component :is="currentComponent" @id-scanned="handleIdScanned"/>
@@ -16,9 +15,8 @@
 import CreateUser from './CreateUser.vue';
 import FindUser from './FindUser.vue';
 import ChangeUser from './ChangeUser.vue';
-
 import ScanPage from './ScanPage.vue';
-import RegistrationLogPage from "./RegistrationLogPage.vue";
+
 
 export default {
   components: {
@@ -26,7 +24,6 @@ export default {
     FindUser,
     ChangeUser,
     ScanPage,
-    RegistrationLogPage
   },
   data() {
     return {
@@ -77,6 +74,8 @@ h2 {
 
 /* General button styling */
 button {
+  position: relative;
+  margin: 3px 3px;
   background-color: #3498db; /* Blue */
   border: none;
   color: white;

@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import {API_URL} from "../settings.js";
+import {addUser, findUserByNameSurname} from "../services/adminService.js";
 
 export default {
   data() {
@@ -33,29 +33,18 @@ export default {
   },
   methods: {
     async createUser() {
-      const userData = { ...this.query }; // collects data in a json
-      console.log('Sending JSON:', JSON.stringify(userData));
+      console.log("this.query is");
+      console.log(this.query);
       try {
-        const response = await fetch(`${API_URL}/api/find-user-by-name-surname?name=${encodeURIComponent(this.query.name)}&surname=${encodeURIComponent(this.query.surname)}`,
-            {
-              method: 'POST',
-              headers: {
-                'accessToken': localStorage.getItem('acc_token'),
-              },
-              body: userData
-            });
-        if (!response.ok) {
-          throw new Error('User not found');
+        this.user = await addUser(this.query);
+        if (this.user) {
+          this.getValidityStatus(this.user.id);
         }
-        this.errorMessage = '';
-
       } catch (error) {
         this.user = null;
-        this.errorMessage = error.message || 'Error creating user';
+        this.errorMessage = error.message || "Error finding user";
       }
-
-
-    }
+    },
   }
 }
 </script>

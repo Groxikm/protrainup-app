@@ -9,8 +9,8 @@
 </template>
 
 <script>
+// this script launches QR code scanner and shares it to the parent component
 import { QrcodeStream } from 'vue-qrcode-reader';
-import { API_URL } from "../settings";
 
 export default {
   name: 'ScanPageComponent',
@@ -32,13 +32,11 @@ export default {
         if (scannedData) {
           this.scannedId = scannedData;
           this.$emit('id-scanned', this.scannedId); // key string which shares data with the AdminPage
-          await this.checkValidity(this.scannedId);
         } else {
           alert('Invalid QR Code format!');
         }
       }
     },
-
     onError(error) {
       console.error('QR Scanner Error:', error);
     },

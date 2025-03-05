@@ -53,26 +53,7 @@ export default {
       if (!this.userId) return; // Early exit if userId is not set
 
       try {
-        const limit = 3;
-        const response = await fetch(`${API_URL}/api/find-user-reg-attempts?id=${this.userId}&limit=${limit}&&latest_date_id=${this.latestDateId}`, {
-          method: 'GET',
-          headers: {
-            'accessToken': localStorage.getItem('acc_token'),
-          }
-        });
 
-        const data = await response.json();
-
-        const attempts = data.attempts || [];
-
-        if (attempts.length < 10) {
-          this.hasMore = false;
-        }
-
-        if (attempts.length > 0) {
-          this.latestDateId = attempts[attempts.length - 1].id;
-          this.attempts.push(...attempts);
-        }
       } catch (error) {
         console.error("Error fetching attempts:", error);
       }
