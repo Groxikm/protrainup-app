@@ -10,11 +10,15 @@
       <input type="date" v-model="query.valid_due" placeholder="Valid Due" required />
       <button type="submit">Submit</button>
     </form>
+    <div v-if="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
   </div>
 </template>
 
 <script>
-import {addUser, findUserByNameSurname} from "../services/adminService.js";
+import {addUser} from "../api/adminPOSTService.js";
+import dayjs from 'dayjs'
 
 export default {
   data() {
@@ -27,21 +31,17 @@ export default {
         avatar_link: '',
         valid_due: ''
       },
-      user: null,
       errorMessage: ''
     };
   },
   methods: {
     async createUser() {
-      console.log("this.query is");
-      console.log(this.query);
       try {
-        this.user = await addUser(this.query);
-        if (this.user) {
-          this.getValidityStatus(this.user.id);
-        }
+        this.query.valid_due =  dayjs(this.query.valid_due).format('MM/DD/YY 12:00:00');
+        const jsonQuery = JSON.stringify(this.query);
+
+        await addUser(jsonQuery);
       } catch (error) {
-        this.user = null;
         this.errorMessage = error.message || "Error finding user";
       }
     },
@@ -65,5 +65,10 @@ input {
 button {
   padding: 0.5rem;
   font-size: 1rem;
+}
+
+.error-message {
+  color: red;
+  font-weight: bold;
 }
 </style>

@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import { findUserByNameSurname, findUserById, checkValidity } from "../services/adminService.js";
+import { findUserByNameSurname, findUserById, checkValidity } from "../api/adminGETService.js";
 
 export default {
   data() {

@@ -1,5 +1,4 @@
 import { API_URL } from "../settings.js";
-import { formatDate } from "../utils/formatDate.js";
 
 export async function checkValidity(userId) {
     const response = await fetch(`${API_URL}/api/check-validity?id=${userId}`, {
@@ -31,7 +30,7 @@ export async function findUserByNameSurname(userName, userSurname) {
     return response.json();
 }
 
-// Function to find a user by ID
+
 export async function findUserById(userId) {
     const response = await fetch(`${API_URL}/api/find-user-by-id?id=${userId}`, {
         method: 'GET',
@@ -76,27 +75,3 @@ export async function findUserRegAttempts(userId, latestDateId){
 
 /// User Manipulation functions
 
-export async function addUser() {
-    const userData = { ...this.query }; // collects data in a json
-    console.log('Sending JSON:', JSON.stringify(userData));
-    try {
-        const response = await fetch(`${API_URL}/api/find-user-by-name-surname?name=${encodeURIComponent(this.query.name)}&surname=${encodeURIComponent(this.query.surname)}`,
-            {
-                method: 'POST',
-                headers: {
-                    'accessToken': localStorage.getItem('acc_token'),
-                },
-                body: userData
-            });
-        if (!response.ok) {
-            throw new Error('User not found');
-        }
-        this.errorMessage = '';
-
-    } catch (error) {
-        this.user = null;
-        this.errorMessage = error.message || 'Error creating user';
-    }
-
-
-}
