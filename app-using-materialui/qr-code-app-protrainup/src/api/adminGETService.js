@@ -61,17 +61,24 @@ export async function findUserRegAttempts(userId, latestDateId){
 
     const data = await response.json();
 
-    const attempts = data.attempts || [];
-
-    if (attempts.length < limit) {
-        return false // false is response to say nothing was loaded
-    }
-
-    if (attempts.length > 0) {
-        this.latestDateId = attempts[attempts.length - 1].id;
-        this.attempts.push(...attempts);
-    }
+    return data
 }
 
-/// User Manipulation functions
+export async function findUsers(latestId){
+    const limit = 5;
+    const response = await fetch(`${API_URL}/api/get-users?limit=${limit}&latest_id=${latestId}`, {
+        method: 'GET',
+        headers: {
+            'accessToken': localStorage.getItem('acc_token'),
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error('Bad response');
+    }
+
+    const data = await response.json();
+
+    return data
+}
 

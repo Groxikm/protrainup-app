@@ -29,7 +29,7 @@ export default {
         login: '',
         password: '',
         avatar_link: '',
-        valid_due: ''
+        valid_due: dayjs(new Date()).format('YYYY-MM-DD'),
       },
       errorMessage: ''
     };
@@ -37,7 +37,7 @@ export default {
   methods: {
     async createUser() {
       try {
-        const formatedDate =  dayjs(this.query.valid_due).format('MM/DD/YY 12:00:00');
+        const formatedDate =  dayjs(this.query.valid_due).format('YY/MM/DD 12:00:00');
         // this approach is necessary since query cannot be json stringified
         const jsonData = {
           "name": this.query.name,

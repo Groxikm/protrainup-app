@@ -27,7 +27,8 @@ export async function addUser(userData) {
                 body: JSON.stringify(userData)
             });
         if (!response.ok) {
-            throw new Error('Failed to create user');
+             console.log(response);
+            //throw new Error('Failed to create user');
         }
 
         return response.json();

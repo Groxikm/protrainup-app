@@ -3,7 +3,7 @@
       <h2>Manage Users</h2>
       <button @click="currentComponent = 'CreateUser'">Create User</button>
       <button @click="currentComponent = 'FindUser'">Find User</button>
-      <button @click="currentComponent = 'ChangeUser'">Update User</button>
+      <button @click="currentComponent = 'UsersList'">UsersList</button>
       <button @click="currentComponent = 'ScanPage'">Scan User QR</button>
     </div>
 
@@ -14,7 +14,7 @@
 // import axios from 'axios'; // usable for sharing data between components
 import CreateUser from './CreateUser.vue';
 import FindUser from './FindUser.vue';
-import ChangeUser from './ChangeUser.vue';
+import UsersList from './UsersList.vue';
 import ScanPage from './ScanPage.vue';
 
 
@@ -22,7 +22,7 @@ export default {
   components: {
     CreateUser,
     FindUser,
-    ChangeUser,
+    UsersList,
     ScanPage,
   },
   data() {

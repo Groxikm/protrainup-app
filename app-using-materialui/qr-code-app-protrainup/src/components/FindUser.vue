@@ -20,6 +20,7 @@
         <input v-model="query.surname" placeholder="Surname" />
         <button type="submit">Find User</button>
       </form>
+
     </div>
     <div v-if="errorMessage" class="error-message">
       {{ errorMessage }}

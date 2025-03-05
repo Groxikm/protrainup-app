@@ -8,7 +8,7 @@ const routes = [
   { path: '/', component: LoginForm },
   { path: '/welcome', name: 'welcome', component: WelcomePage },
   { path: '/qrscanner', name: 'qrscanner', component: ScanPage },
-  { path: '/admin', name: 'admin', component: AdminPage },
+  { path: '/admin', name: 'admin', component: AdminPage, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

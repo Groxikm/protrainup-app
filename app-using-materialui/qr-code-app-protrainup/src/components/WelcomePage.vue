@@ -6,9 +6,6 @@
 
     <p class="validity">
       <strong>Valid Until: </strong>
-      <span :class="{ expired: isExpired, valid: !isExpired }">
-        {{ user.valid_due }}
-      </span>
     </p>
 
     <div class="qr-code-container">
@@ -135,20 +132,4 @@ export default {
   transition: background-color 0.3s ease;
 }
 
-.btn-cta-primary:hover {
-  background-color: #e9553b;
-  border: 2px solid #e9553b;
-  color: white;
-}
-
-.expired {
-  color: red;
-  font-weight: bold;
-  background-color: rgba(255, 0, 0, 0.1); /* Light red background */
-}
-
-.valid {
-  color: black;
-  font-weight: bold;
-}
 </style>
