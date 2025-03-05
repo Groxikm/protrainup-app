@@ -55,7 +55,7 @@ export default {
       try {
         this.user = await findUserByNameSurname(this.query.name, this.query.surname);
         if (this.user) {
-          this.getValidityStatus(this.user.id);
+          await this.getValidityStatus(this.user.id);
         }
       } catch (error) {
         this.user = null;

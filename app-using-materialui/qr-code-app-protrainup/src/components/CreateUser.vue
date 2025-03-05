@@ -37,11 +37,22 @@ export default {
   methods: {
     async createUser() {
       try {
-        this.query.valid_due =  dayjs(this.query.valid_due).format('MM/DD/YY 12:00:00');
-
-        const jsonQuery = JSON.stringify(this.query);
-
-        await addUser(jsonQuery);
+        const formatedDate =  dayjs(this.query.valid_due).format('MM/DD/YY 12:00:00');
+        // this approach is necessary since query cannot be json stringified
+        const jsonData = {
+          "name": this.query.name,
+          "surname": this.query.surname,
+          "login": this.query.login,
+          "password": this.query.password,
+          "avatar_link": this.query.avatar_link,
+          "valid_due": formatedDate
+        }
+        for (const key in jsonData) {
+          if (!jsonData[key]) {
+            throw new Error(`Missing value for ${key}`);
+          }
+        }
+        await addUser(jsonData);
       } catch (error) {
         this.errorMessage = error.message || "Error finding user";
       }
