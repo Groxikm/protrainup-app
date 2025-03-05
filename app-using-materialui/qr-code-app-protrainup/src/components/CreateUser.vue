@@ -38,6 +38,7 @@ export default {
     async createUser() {
       try {
         this.query.valid_due =  dayjs(this.query.valid_due).format('MM/DD/YY 12:00:00');
+
         const jsonQuery = JSON.stringify(this.query);
 
         await addUser(jsonQuery);
