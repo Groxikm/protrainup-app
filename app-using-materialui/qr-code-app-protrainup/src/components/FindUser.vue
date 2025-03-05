@@ -2,7 +2,7 @@
   <div class="container">
     <div class="search-panel">
       <h2>Find User</h2>
-      <form @submit.prevent="findUser">
+      <form @submit.prevent="getUserByNameSurname">
         <input v-model="query.name" placeholder="Name" />
         <input v-model="query.surname" placeholder="Surname" />
         <button type="submit">Find User</button>
@@ -29,14 +29,10 @@
 </template>
 
 <script>
-import { API_URL } from '../settings';
+import { findUserByNameSurname, findUserById } from "../services/adminService.js";
+import {API_URL} from "../settings.js";
+
 export default {
-  props: {
-    userId: {
-      type: String,
-      required: false
-    }
-  },
   data() {
     return {
       query: {
@@ -49,55 +45,33 @@ export default {
     };
   },
   mounted() {
+    API_URL
     // Fetch user details based on userId when the component is mounted
-    if (this.userId) {
-      this.findUserById(this.userId);
+    const userId = localStorage.getItem('last_scanned_id');
+    if (userId !== null) {
+      this.getUserById(userId);
     }
   },
   methods: {
-    async findUser() {
-      console.log(this.userId);
+     async getUserByNameSurname(userName, userSurname) {
       try {
-        /////
-        const response = await fetch(`${API_URL}/api/find-user-by-name-surname?name=${encodeURIComponent(this.query.name)}&surname=${encodeURIComponent(this.query.surname)}`,
-        {
-                method: 'GET',
-                headers: {
-                    'accessToken': localStorage.getItem('acc_token'),
-                }
-            });
-
-        if (!response.ok) {
-          throw new Error('User not found');
-        }
-
-        this.user = await response.json();
-        this.errorMessage = '';
-      /////
+        this.user = await findUserByNameSurname(userName, userSurname);
       }
       catch (error) {
         this.user = null;
         this.errorMessage = error.message || 'Error finding user';
       }
     },
-    async findUserById(userId) {
-      // New method to find a user by user ID
+
+     async getUserById(userId) {
       try {
-        /////
-        const response = await fetch(`${API_URL}/api/find-user-by-id?id=${userId}`, {
-          method: 'GET',
-          headers: {
-            'accessToken': localStorage.getItem('acc_token'),
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('User not found');
+        try {
+          this.user = await findUserById(userId);
         }
-
-        this.user = await response.json();
-        this.errorMessage = '';
-        /////
+        catch (error) {
+          this.user = null;
+          this.errorMessage = error.message || 'Error finding user';
+        }
       } catch (error) {
         this.user = null;
         this.errorMessage = error.message || 'Error finding user';

@@ -2,41 +2,59 @@
   <div>
     <h2>Create User</h2>
     <form @submit.prevent="createUser">
-      <input v-model="user.name" placeholder="Name" required />
-      <input v-model="user.surname" placeholder="Surname" required />
-      <input v-model="user.login" placeholder="Login" required />
-      <input type="password" v-model="user.password" placeholder="Password" required />
-      <input v-model="user.avatar_link" placeholder="Avatar Link" required />
-      <input type="date" v-model="user.validDue" placeholder="Valid Due" required />
+      <input v-model="query.name" placeholder="Name" required />
+      <input v-model="query.surname" placeholder="Surname" required />
+      <input v-model="query.login" placeholder="Login" required />
+      <input type="password" v-model="query.password" placeholder="Password" required />
+      <input v-model="query.avatar_link" placeholder="Avatar Link" required />
+      <input type="date" v-model="query.valid_due" placeholder="Valid Due" required />
       <button type="submit">Submit</button>
     </form>
   </div>
 </template>
 
 <script>
+import {API_URL} from "../settings.js";
+
 export default {
   data() {
     return {
-      user: {
+      query: {
         name: '',
         surname: '',
         login: '',
         password: '',
         avatar_link: '',
-        validDue: ''
-      }
+        valid_due: ''
+      },
+      user: null,
+      errorMessage: ''
     };
   },
   methods: {
-    createUser() {
-      // Collect data into JSON
-      const userData = { ...this.user };
-
-      // POST request simulation
+    async createUser() {
+      const userData = { ...this.query }; // collects data in a json
       console.log('Sending JSON:', JSON.stringify(userData));
+      try {
+        const response = await fetch(`${API_URL}/api/find-user-by-name-surname?name=${encodeURIComponent(this.query.name)}&surname=${encodeURIComponent(this.query.surname)}`,
+            {
+              method: 'POST',
+              headers: {
+                'accessToken': localStorage.getItem('acc_token'),
+              },
+              body: userData
+            });
+        if (!response.ok) {
+          throw new Error('User not found');
+        }
+        this.errorMessage = '';
 
-      // In a real application, use `fetch` or `axios` to send the userData to the server
-      // fetch('your-api-endpoint', { method: 'POST', body: JSON.stringify(userData), headers: { 'Content-Type': 'application/json' }});
+      } catch (error) {
+        this.user = null;
+        this.errorMessage = error.message || 'Error creating user';
+      }
+
+
     }
   }
 }

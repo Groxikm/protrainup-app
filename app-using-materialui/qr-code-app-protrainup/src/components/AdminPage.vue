@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+// import axios from 'axios'; // usable for sharing data between components
 import CreateUser from './CreateUser.vue';
 import FindUser from './FindUser.vue';
 import ChangeUser from './ChangeUser.vue';
@@ -41,34 +41,9 @@ export default {
     handleIdScanned(scannedId) {
       this.userId = scannedId;
       console.log("Scanned ID received:", this.userId);
-      this.fetchAttempts();
+      localStorage.setItem("last_scanned_id", this.userId);
+      this.currentComponent = FindUser;
     },
-    async fetchAttempts() {
-      if (!this.userId) return;
-      try {
-        const response = await axios.get(`/api/user-attempts`, {
-          params: {user_id: this.userId, latest_date_id: this.latestDateId}
-        });
-        if (response.data.length < 10) {
-          this.hasMore = false;
-        }
-        if (response.data.length > 0) {
-          this.latestDateId = response.data[response.data.length - 1].id;
-          this.attempts.push(...response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching attempts:", error);
-      }
-    },
-    loadMore() {
-      this.fetchAttempts();
-    },
-    resetData() {
-      this.attempts = [];
-      this.latestDateId = null;
-      this.hasMore = true;
-      this.fetchAttempts();
-    }
   }
 };
 </script>

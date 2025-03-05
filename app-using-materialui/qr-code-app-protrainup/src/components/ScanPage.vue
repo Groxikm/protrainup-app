@@ -3,14 +3,14 @@
     <h2>QR Code Scanner</h2>
     <qrcode-stream @detect="onDetect" @error="onError"></qrcode-stream>
     <p v-if="scannedId">Scanned ID: {{ scannedId }}</p>
-    <button v-if="scannedId" @click="sendScannedId">Send to Server</button>
     <p v-if="serverResponse">{{ serverResponse }}</p>
+    <p v-if="errorMessage">{{ errorMessage }}</p>
   </div>
 </template>
 
 <script>
 import { QrcodeStream } from 'vue-qrcode-reader';
-// import { API_URL } from "@/settings";
+import { API_URL } from "../settings";
 
 export default {
   name: 'ScanPageComponent',
@@ -21,31 +21,26 @@ export default {
     return {
       scannedId: null,
       serverResponse: '',
+      errorMessage: ''
     };
   },
   methods: {
     async onDetect(detectedCodes) {
       if (detectedCodes.length > 0) {
         const scannedData = detectedCodes[0].rawValue;
-        console.log('Detected QR Code:', scannedData);
+        // console.log('Detected QR Code:', scannedData); // debug on the side of the component
         if (scannedData) {
           this.scannedId = scannedData;
-          this.$emit('id-scanned', this.scannedId);
+          this.$emit('id-scanned', this.scannedId); // key string which shares data with the AdminPage
+          await this.checkValidity(this.scannedId);
         } else {
           alert('Invalid QR Code format!');
         }
       }
     },
-    async sendScannedId() {
-      if (!this.scannedId) {
-        alert('No valid ID scanned!');
-        return;
-      }
-      // Code to send the scanned ID to a server (omitted for brevity)
-    },
+
     onError(error) {
       console.error('QR Scanner Error:', error);
-      alert('QR Scanner Error: ' + error.message);
     },
   },
 };

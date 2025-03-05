@@ -1,47 +1,77 @@
 <template>
-  <div>
+  <div class="container">
+    <h2>Registration Attempts</h2>
     <input v-model="userId" placeholder="Enter user ID" @change="resetData" />
-    <table>
+
+    <table class="attempts-table">
       <thead>
-        <tr>
-          <th>Registration Date</th>
-        </tr>
+      <tr>
+        <th>Registration Date</th>
+        <th>Location</th>
+      </tr>
       </thead>
       <tbody>
-        <tr v-for="attempt in attempts" :key="attempt.id">
-          <td>{{ attempt.registration_date }}</td>
-        </tr>
+      <tr v-for="attempt in attempts" :key="attempt.id">
+        <td>{{ attempt.date }}</td>
+        <td>{{ attempt.location }}</td>
+      </tr>
       </tbody>
     </table>
+
     <button @click="loadMore" v-if="hasMore">Load More</button>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
+import { API_URL } from '../settings';
 
 export default {
+  props: {
+    initialUserId: {
+      type: String,
+      required: true
+    }
+  },
   data() {
     return {
-      userId: '',
+      userId: this.initialUserId, // userId receives initial value from props
       attempts: [],
       latestDateId: null,
       hasMore: true,
     };
   },
+  watch: {
+    userId(newId, oldId) {
+      if (newId !== oldId) {
+        this.resetData(); // Reset data whenever the userId changes
+      }
+    }
+  },
   methods: {
     async fetchAttempts() {
-      if (!this.userId) return;
+      if (!this.userId) return; // Early exit if userId is not set
+
       try {
-        const response = await axios.get(`/api/user-attempts`, {
-          params: { user_id: this.userId, latest_date_id: this.latestDateId }
+        const limit = 3;
+        const response = await fetch(`${API_URL}/api/find-user-reg-attempts?id=${this.userId}&limit=${limit}&&latest_date_id=${this.latestDateId}`, {
+          method: 'GET',
+          headers: {
+            'accessToken': localStorage.getItem('acc_token'),
+          }
         });
-        if (response.data.length < 10) {
+
+        const data = await response.json();
+
+        const attempts = data.attempts || [];
+
+        if (attempts.length < 10) {
           this.hasMore = false;
         }
-        if (response.data.length > 0) {
-          this.latestDateId = response.data[response.data.length - 1].id;
-          this.attempts.push(...response.data);
+
+        if (attempts.length > 0) {
+          this.latestDateId = attempts[attempts.length - 1].id;
+          this.attempts.push(...attempts);
         }
       } catch (error) {
         console.error("Error fetching attempts:", error);
@@ -56,10 +86,12 @@ export default {
       this.hasMore = true;
       this.fetchAttempts();
     }
+  },
+  mounted() {
+    this.fetchAttempts(); // Fetch attempts on initial mount
   }
 };
 </script>
-
 
 <style scoped>
 .container {
