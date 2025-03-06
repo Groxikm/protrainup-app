@@ -3,7 +3,7 @@
       <h2>Manage Users</h2>
       <button @click="currentComponent = 'CreateUser'">Create User</button>
       <button @click="currentComponent = 'FindUser'">Find User</button>
-      <button @click="currentComponent = 'UsersList'">UsersList</button>
+      <button @click="currentComponent = 'UsersList'">Users List</button>
       <button @click="currentComponent = 'ScanPage'">Scan User QR</button>
     </div>
 
@@ -52,6 +52,7 @@ div {
   margin: 0 auto;
   padding: 20px;
   font-family: Arial, sans-serif;
+
 }
 
 /* Heading */
@@ -70,10 +71,12 @@ h2 {
   gap: 10px;
   justify-content: center;
   margin-bottom: 30px;
+
 }
 
 /* General button styling */
 button {
+
   position: relative;
   margin: 3px 3px;
   background-color: #3498db; /* Blue */

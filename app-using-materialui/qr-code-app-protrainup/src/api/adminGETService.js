@@ -66,7 +66,7 @@ export async function findUserRegAttempts(userId, latestDateId){
 
 export async function findUsers(latestId){
     const limit = 5;
-    const response = await fetch(`${API_URL}/api/get-users?limit=${limit}&latest_id=${latestId}`, {
+    const response = await fetch(`${API_URL}/api/get-users?last_id=${latestId}&limit=${limit}`, {
         method: 'GET',
         headers: {
             'accessToken': localStorage.getItem('acc_token'),

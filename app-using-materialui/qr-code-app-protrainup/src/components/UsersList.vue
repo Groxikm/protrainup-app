@@ -1,72 +1,90 @@
 <template>
-  <div class="change-user">
-    <h2>Update User Information</h2>
-    <form @submit.prevent="updateUser">
-      <label for="userId">User ID:</label>
-      <input type="text" v-model="userId" required />
-
-      <label for="newName">New Name:</label>
-      <input type="text" v-model="newName" />
-
-      <label for="newSurname">New Surname:</label>
-      <input type="text" v-model="newSurname" />
-
-      <label for="newValidDue">New Valid Until:</label>
-      <input type="date" v-model="newValidDue" />
-
-      <button type="submit">Update User</button>
-    </form>
+  <div>
+    <table>
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Surname</th>
+        <th>Login</th>
+        <th>Valid Due</th>
+        <th>Avatar</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="(user, index) in users" :key="user.id">
+        <td>{{ index + 1 }}</td>
+        <td>{{ user.name }}</td>
+        <td>{{ user.surname }}</td>
+        <td>{{ user.login }}</td>
+        <td>{{ user.valid_due }}</td>
+        <td>
+          <img :src="formatAvatar(user.avatar_link)" alt="Avatar" width="32" height="32">
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <button @click="loadMoreUsers">Load More</button>
   </div>
 </template>
 
 <script>
+import { findUsers } from "../api/adminGETService.js";
+
 export default {
   data() {
     return {
-      userId: '',
-      newName: '',
-      newSurname: '',
-      newValidDue: ''
+      users: [],
+      lastUserId: null,
     };
   },
+  async mounted() {
+    await this.loadMoreUsers();
+  },
   methods: {
-    updateUser() {
+    async loadMoreUsers() {
+      try {
 
+        const data = await findUsers(this.lastUserId);
+        this.lastUserId = data.lastUserId;
+        this.users.push(...data.users);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    },
+    formatAvatar(avatarLink) {
+      return avatarLink && typeof avatarLink === 'string' ? avatarLink : 'https://via.placeholder.com/32';
     }
   }
 };
 </script>
 
 <style scoped>
-.change-user {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+table {
+  width: 100%;
+  border-collapse: collapse;
 }
-form {
-  display: flex;
-  flex-direction: column;
-}
-label {
-  margin-top: 10px;
-}
-input {
+
+th, td {
+  border: 1px solid #ddd;
   padding: 8px;
-  margin-top: 5px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  text-align: left;
 }
+
+th {
+  background-color: #f4f4f4;
+}
+
 button {
-  margin-top: 15px;
-  background-color: #26a69a;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #007bff;
   color: white;
   border: none;
-  padding: 10px;
   cursor: pointer;
-  border-radius: 4px;
 }
+
 button:hover {
-  background-color: #1d9a87;
+  background: #0056b3;
 }
 </style>

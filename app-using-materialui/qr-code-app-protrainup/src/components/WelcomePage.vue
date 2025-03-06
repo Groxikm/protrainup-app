@@ -1,11 +1,11 @@
 <template>
-  <div class="welcome-page container" :class="{ expired: !isExpired }">
+  <div class="welcome-page container">
     <div class="header">
       <h2>Welcome, {{ user.name }} {{ user.surname }}!</h2>
     </div>
 
     <p class="validity">
-      <strong>Valid Until: </strong>
+      <strong>Valid Until: {{ user.valid_due }}</strong>
     </p>
 
     <div class="qr-code-container">
@@ -34,54 +34,7 @@ export default {
       },
     };
   },
-  computed: {
-    parsedValidDue() {
-      console.log("Valid due date:", this.user.valid_due); // Log the original value
-      if (!this.user.valid_due) return null;
 
-      // Parse the date string (assuming format: "DD/MM/YYYY HH:mm:ss")
-      const [datePart, timePart] = this.user.valid_due.split(" ");
-      if (!datePart || !timePart) return null; // Ensure both parts exist
-
-      const [day, month, year] = datePart.split("/").map(Number);
-      const [hour, minute, second] = timePart.split(":").map(Number);
-
-      // Validate parts before creating a Date object
-      if (
-          isNaN(day) || isNaN(month) || isNaN(year) ||
-          isNaN(hour) || isNaN(minute) || isNaN(second)
-      ) {
-        console.error("Invalid date components:", { day, month, year, hour, minute, second });
-        return null; // Return null for invalid parts
-      }
-
-      // Create a Date object (month is 0-based in JavaScript)
-      const parsedDate = new Date(year, month - 1, day, hour, minute, second);
-
-      // Check if the date is valid
-      if (parsedDate.getFullYear() !== year ||
-          parsedDate.getMonth() !== (month - 1) ||
-          parsedDate.getDate() !== day) {
-        console.error("Parsed date is invalid:", parsedDate);
-        return null; // Return null if the date is not valid
-      }
-
-      return parsedDate; // Return the valid Date object
-    },
-    isExpired() {
-      const now = new Date();
-      console.log("Current date/time:", now);
-      console.log("Parsed valid due date:", this.parsedValidDue);
-
-      // If parsedValidDue can't be parsed correctly, return false (not expired)
-      if (!this.parsedValidDue) return false;
-
-      // Determine if the valid due date has passed
-      const expired = now > this.parsedValidDue;
-      console.log("Is expired:", expired);
-      return expired; // true if expired, false otherwise
-    }
-  },
 };
 </script>
 

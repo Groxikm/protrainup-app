@@ -38,7 +38,6 @@ export default {
     async createUser() {
       try {
         const formatedDate =  dayjs(this.query.valid_due).format('YY/MM/DD 12:00:00');
-        // this approach is necessary since query cannot be json stringified
         const jsonData = {
           "name": this.query.name,
           "surname": this.query.surname,
