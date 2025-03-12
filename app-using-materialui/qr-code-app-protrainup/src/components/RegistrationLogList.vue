@@ -1,13 +1,5 @@
 <template>
   <div>
-    <div class="search-panel">
-      <h2>Enter User</h2>
-      <form @submit.prevent="getUserByNameSurname">
-        <input v-model="query.name" placeholder="Name" />
-        <input v-model="query.surname" placeholder="Surname" />
-        <button type="submit">Find User</button>
-      </form>
-    </div>
     <table>
       <thead>
       <tr>
@@ -40,7 +32,7 @@
 </template>
 
 <script>
-import {findUserByNameSurname, findUsers} from "../api/adminGETService.js";
+import {findAllRegAttempts} from "../api/adminGETService.js";
 
 const user_arr =[];
 export default {

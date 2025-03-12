@@ -2,9 +2,10 @@
     <div>
       <h2>Manage Users</h2>
       <button @click="currentComponent = 'CreateUser'">Create User</button>
-      <button @click="currentComponent = 'FindUser'">Find User</button>
+      <button @click="currentComponent = 'FindUser'">User Panel</button>
       <button @click="currentComponent = 'UsersList'">Users List</button>
       <button @click="currentComponent = 'ScanPage'">Scan User QR</button>
+      <button @click="currentComponent = 'StatusConditionEdit'">Rules edit</button>
     </div>
 
     <component :is="currentComponent" @id-scanned="handleIdScanned"/>
@@ -16,7 +17,9 @@ import CreateUser from './CreateUser.vue';
 import FindUser from './FindUser.vue';
 import UsersList from './UsersList.vue';
 import ScanPage from './ScanPage.vue';
+import StatusConditionEdit from './StatusConditionEdit.vue';
 
+import {addRegAttempt, addRegAttemptGreen} from "../api/adminPOSTService.js";
 
 export default {
   components: {
@@ -24,6 +27,7 @@ export default {
     FindUser,
     UsersList,
     ScanPage,
+    StatusConditionEdit,
   },
   data() {
     return {
@@ -39,7 +43,15 @@ export default {
       this.userId = scannedId;
       console.log("Scanned ID received:", this.userId);
       localStorage.setItem("last_scanned_id", this.userId);
+      const userDataJson = {
+        "id": this.userId,
+        "location": "Wroclaw"
+      }
+      addRegAttemptGreen(userDataJson);
       this.currentComponent = FindUser;
+    },
+    requestComponentChange(newComponent) {
+      this.$emit('change-component', newComponent);
     },
   }
 };

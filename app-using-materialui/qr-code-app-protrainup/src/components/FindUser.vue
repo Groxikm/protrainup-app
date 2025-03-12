@@ -1,15 +1,19 @@
 <template>
   <div class="container">
-    <div v-if="user" :class="['user-card', { 'invalid-user': !validity, 'valid-user': validity }]">
+    <div
+        v-if="user"
+        :class="['user-card', statusClass]"
+    >
       <div class="user-details">
         <h3>{{ user.name }} {{ user.surname }}</h3>
         <p><strong>Login:</strong> {{ user.login }}</p>
-        <p><strong>Field:</strong> {{ user.password }}</p>
-        <p><strong>Test avatar_link:</strong> {{ user.avatar_link }}</p>
-        <p><strong>Valid Until:</strong> {{ user.valid_due }}</p>
+        <p><strong>Club:</strong> {{ user.club }}</p>
+        <p><strong>Attendance:</strong> {{ user.attendance }}</p>
+        <p><strong>Number of unpaid months:</strong> {{ user.backlog }} </p>
       </div>
       <div class="avatar-container">
         <img :src="user.avatar_link" alt="User Avatar" class="avatar" />
+        <img v-if="user.club_link" :src="user.club_link" alt="Club Image" class="club" />
       </div>
 
       <button class="delete-button" @click="deleteUser">Delete</button>
@@ -18,54 +22,103 @@
       <div v-if="editing" class="edit-form">
         <input v-model="editData.name" placeholder="New Name" />
         <input v-model="editData.surname" placeholder="New Surname" />
-        <input type="date" v-model="editData.valid_due" placeholder="New Valid Until" />
+        <input v-model="editData.avatar_link" placeholder="New Avatar" />
         <button @click="updateUser">Save</button>
       </div>
     </div>
 
-    <div class="search-panel">
-      <h2>Enter User</h2>
-      <form @submit.prevent="getUserByNameSurname">
-        <input v-model="query.name" placeholder="Name" />
-        <input v-model="query.surname" placeholder="Surname" />
-        <button type="submit">Find User</button>
-      </form>
-    </div>
+    <!-- "Pass" Button -->
+    <button v-if="showPassButton" class="pass-button" @click="handlePass">Pass</button>
 
     <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+    <!-- Registration Attempts Table -->
+    <div class="reg-attempts-container">
+      <h3>Registration Attempts</h3>
+      <table v-if="regAttempts.length > 0" class="reg-attempts-table">
+        <thead>
+        <tr>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Status</th>
+          <th>Role</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="attempt in regAttempts" :key="attempt.id">
+          <td>{{ attempt.date }}</td>
+          <td>{{ attempt.location }}</td>
+          <td :class="'status-' + attempt.status.toLowerCase()">{{ attempt.status }}</td>
+          <td>{{ attempt.role }}</td>
+        </tr>
+        </tbody>
+      </table>
+      <div v-else class="no-data-message">No registration attempts found.</div>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-controls">
+        <button
+            @click="loadMoreAttempts"
+            :disabled="loadingMore || !hasMoreAttempts"
+            class="load-more-button"
+        >
+          {{ loadingMore ? 'Loading...' : 'Load More' }}
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { findUserByNameSurname, findUserById, checkValidity } from "../api/adminGETService.js";
-import { changeUserNameSurname, changeUserValidDue, deleteUser } from "../api/adminPUTService.js";
-import dayjs from "dayjs";
+import { findUserById, checkValidity, findUserRegAttempts } from "../api/adminGETService.js";
+import { changeUserNameSurname, changeUserAvatar, deleteUser } from "../api/adminPUTService.js";
+import { addRegAttempt} from "../api/adminPOSTService.js";
 
 export default {
   data() {
     return {
-      query: {
-
-        name: "",
-        surname: ""
-      },
       userId: "",
-      validity: true,
+      validity: false,
+      status: "Red", // Default status
       user: null,
       errorMessage: "",
       editing: false,
       editData: {
         name: "",
         surname: "",
-        valid_due: dayjs(new Date()).format('YYYY-MM-DD'),
-      }
+        avatar_link: "",
+      },
+      // Registration attempts data
+      regAttempts: [],
+      latestDate: null,
+      loadingMore: false,
+      hasMoreAttempts: true
     };
+  },
+  computed: {
+    statusClass() {
+      switch (this.status) {
+        case 'Green':
+          return 'status-green';
+        case 'Orange b':
+          return 'status-orange-back';
+        case 'Orange f':
+          return 'status-orange-front';
+        case 'Red':
+        default:
+          return 'status-red';
+      }
+    },
+    showPassButton() {
+      return this.status === 'Red' || this.status === 'Orange b' || this.status === 'Orange f';
+    }
   },
   mounted() {
     this.userId = localStorage.getItem("last_scanned_id");
     if (this.userId !== null) {
       this.getUserById(this.userId);
       this.getValidityStatus(this.userId);
+      this.getRegAttempts();
     } else this.errorMessage = "No user ID found.";
   },
   methods: {
@@ -82,7 +135,8 @@ export default {
     async getValidityStatus(userId) {
       try {
         const data = await checkValidity(userId);
-        this.validity = data.status;
+        this.status = data.status;
+        this.validity = data.status === "Green";
       } catch (error) {
         this.validity = false;
         this.errorMessage = error.message || "Error checking validity";
@@ -96,18 +150,6 @@ export default {
       }
     },
 
-    async getUserByNameSurname() {
-      try {
-        this.user = await findUserByNameSurname(this.query.name, this.query.surname);
-        if (this.user) {
-          await this.getValidityStatus(this.user.id);
-        }
-      } catch (error) {
-        this.user = null;
-        this.errorMessage = error.message || "Error finding user";
-      }
-    },
-
     // Editing functionality
     toggleEdit() {
       this.editing = !this.editing;
@@ -116,15 +158,32 @@ export default {
       }
     },
 
-    // This method handles three input field name, surname, valid_due to run changes in a single click
+    // Pass button functionality
+    handlePass() {
+      const userDataJson = {
+        "id": this.userId,
+        "location": "Wroclaw"
+      }
+      try {
+        addRegAttempt(userDataJson);
+        this.latestDate = null;
+        this.getRegAttempts();
+      }
+      catch(error) {
+        this.validity = false;
+        this.errorMessage = error.message || "Error checking validity";
+      }
+      console.log('Pass button clicked');
+    },
+
+    // This method handles three input field name, surname, avatar link to run changes in a single click
     async updateUser() {
-      // Checks the validity of name surname just in case they get left empty
       if (this.editData.name !== null || this.editData.surname !== null) {
         try {
           const userDataJSON = {
-              "id": this.userId,
-              "name": this.editData.name,
-              "surname": this.editData.surname
+            id: this.userId,
+            name: this.editData.name,
+            surname: this.editData.surname
           }
           await changeUserNameSurname(userDataJSON);
           this.editing = false;
@@ -132,26 +191,22 @@ export default {
           this.errorMessage = error.message || "Error updating name surname";
         }
       }
-      // date change is checked. If it's not empty -- requests changes
-      if (this.editData.valid_due !== null) {
+      if (this.editData.avatar_link !== null) {
         try {
-          const formatedDate = dayjs(this.editData.valid_due).format('YY/MM/DD 12:00:00');;
           const userDataJSON = {
-            "id": this.userId,
-            "valid_due": formatedDate,
+            id: this.userId,
+            avatar_link: this.editData.avatar_link,
           }
-          await changeUserValidDue(userDataJSON);
+          await changeUserAvatar(userDataJSON);
           this.editing = false;
         } catch (error) {
           this.errorMessage = error.message || "Error updating name surname";
         }
       }
-      // Update and check the user card
       if (this.userId !== null) {
         await this.getUserById(this.userId);
         await this.getValidityStatus(this.userId);
       }
-
     },
 
     async deleteUser() {
@@ -161,101 +216,108 @@ export default {
       } catch (error) {
         this.errorMessage = error.message || "Error deleting user";
       }
+    },
+
+    // Registration attempts functionality
+    async getRegAttempts() {
+      try {
+        this.loadingMore = true;
+        const data = await findUserRegAttempts(this.userId, this.latestDate || '');
+
+        if (this.latestDate) {
+          this.regAttempts = [...this.regAttempts, ...data.attempts];
+        } else {
+          this.regAttempts = data.attempts;
+        }
+
+        this.latestDate = data.latestDate;
+        this.hasMoreAttempts = true;//data.attempts.length === 20;
+      } catch (error) {
+        this.errorMessage = error.message || "Error loading registration attempts";
+      } finally {
+        this.loadingMore = false;
+      }
+    },
+
+    async loadMoreAttempts() {
+      if (this.latestDate) {
+        await this.getRegAttempts();
+      }
     }
   }
 };
 </script>
 
 <style scoped>
-
-/* General styles for the container */
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  max-width: 800px;
-  margin: auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+/* Styles for the "Pass" button */
+.pass-button {
+  display: block;
+  width: 100px;
+  height: 100px;
+  background-color: #ff5722;
+  color: white;
+  font-size: 18px;
+  border: none;
+  border-radius: 50%;
+  margin: 20px auto;
+  cursor: pointer;
+  text-align: center;
+  line-height: 100px;
+  transition: background-color 0.3s ease;
 }
 
-/* Styles for input and search panel */
-.search-panel {
-  flex: 1;
-  background: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+.pass-button:hover {
+  background-color: #e64a19;
 }
 
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* Adds space between inputs */
+/* Styles for user card with dynamic shadow based on status */
+.status-green {
+  box-shadow: 0 0 15px rgba(168, 224, 99, 0.5), 0 0 30px rgba(86, 171, 47, 0.3);
 }
 
-input {
-  padding: 10px; /* Increased padding for a better touch target */
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  transition: border-color 0.3s ease, box-shadow 0.2s ease; /* Smoother transition for focus */
-  font-size: 16px; /* Larger font size for better readability */
+.status-red {
+  box-shadow: 0 0 15px rgba(255, 69, 69, 0.5), 0 0 30px rgba(139, 0, 0, 0.3);
 }
 
-/* Change border color and add an outline on focus */
-input:focus {
-  border-color: #26a69a; /* Change border color on focus */
-  outline: none; /* Remove the default outline */
-  box-shadow: 0 0 5px rgba(38, 166, 154, 0.5); /* Add a subtle shadow */
+.status-orange-back {
+  box-shadow: 0 0 15px rgba(255, 165, 0, 0.5), 0 0 30px rgba(255, 99, 71, 0.3);
 }
 
-/* User card styles */
+.status-orange-front {
+  box-shadow: 0 0 15px rgba(255, 165, 0, 0.5), 0 0 30px rgba(255, 140, 0, 0.3);
+}
+
+/* User card base style */
 .user-card {
   position: relative;
   padding: 20px;
   border-radius: 8px;
-  background: white; /* Changed to white for improved visibility */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
-}
-
-/* Valid and invalid user styles */
-.valid-user {
-  background: linear-gradient(to bottom, rgba(0, 255, 0, 0.25), transparent 30%); /* Lighter gradient */
-  box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
-}
-
-.invalid-user {
-  background: linear-gradient(to bottom, rgba(255, 0, 0, 0.3), transparent 30%); /* Lighter gradient */
-  box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);
+  background: white; /* Maintain white background for content clarity */
+  margin: 10px 0;
+  transition: box-shadow 0.3s ease-in-out;
 }
 
 /* Button styles */
 button {
-  padding: 10px 20px; /* Increased padding for better touch and readability */
+  padding: 10px 20px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px; /* Larger font size for better readability */
-  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transition effects */
+  font-size: 16px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-/* Edit button styles */
 .edit-button {
   background-color: #2196f3;
   color: white;
   position: relative;
 }
 
-/* Hover effect on edit button */
 .edit-button:hover {
   background-color: #1976d2;
-  transform: translateY(-2px); /* Raise button effect */
+  transform: translateY(-2px);
 }
 
-/* Delete button styles */
 .delete-button {
   background-color: #d32f2f;
   color: white;
@@ -263,20 +325,20 @@ button {
   right: 10px;
 }
 
-/* Hover effect on delete button */
 .delete-button:hover {
   background-color: #b71c1c;
-  transform: translateY(-2px); /* Raise button effect */
+  transform: translateY(-2px);
 }
 
 /* Avatar container styles */
 .avatar-container {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 10px; /* Space between avatar and club image */
 }
 
-/* Avatar image styles */
 .avatar {
   width: 90px;
   height: 90px;
@@ -284,4 +346,85 @@ button {
   object-fit: cover;
 }
 
+.club {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Registration attempts section */
+.reg-attempts-container {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  margin-top: 20px;
+}
+
+.reg-attempts-container h3 {
+  margin-top: 0;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.reg-attempts-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+}
+
+.reg-attempts-table th,
+.reg-attempts-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+.reg-attempts-table th {
+  background-color: #f4f4f4;
+  font-weight: 600;
+}
+
+.reg-attempts-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.reg-attempts-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Pagination controls */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.load-more-button {
+  background-color: #2196f3;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.load-more-button:hover:not(:disabled) {
+  background-color: #0b7dda;
+}
+
+.load-more-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 20px;
+  color: #757575;
+}
 </style>

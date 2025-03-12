@@ -4,13 +4,9 @@
       <h2>Welcome, {{ user.name }} {{ user.surname }}!</h2>
     </div>
 
-    <p class="validity">
-      <strong>Valid Until: {{ user.valid_due }}</strong>
-    </p>
-
     <div class="qr-code-container">
       <h3>Your ID as QR Code:</h3>
-      <qrcode-vue :value="user.id" :size="200" level="M" />
+      <qrcode-vue :value="user.id" :size="250" level="M" />
     </div>
 
   </div>
@@ -30,7 +26,6 @@ export default {
         id: this.$route.query.id || "",
         name: this.$route.query.name || "",
         surname: this.$route.query.surname || "",
-        valid_due: this.$route.query.valid_due || "",
       },
     };
   },
@@ -56,11 +51,6 @@ export default {
   margin-bottom: 15px; /* Spacing for better separation */
 }
 
-.validity {
-  font-size: 18px;
-  margin-bottom: 20px;
-}
-
 .qr-code-container {
   margin-top: 30px;
   margin-bottom: 20px;
@@ -69,20 +59,4 @@ export default {
   border-radius: 8px;
   background-color: white; /* Contrasting background for QR code area */
 }
-
-.footer-note {
-  margin-top: 30px;
-}
-
-.btn-cta-primary {
-  background-color: #26a69a;
-  border: 2px solid #26a69a;
-  color: white;
-  padding: 10px 20px;
-  font-weight: bold;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
 </style>

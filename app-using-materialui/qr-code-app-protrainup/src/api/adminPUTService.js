@@ -18,8 +18,25 @@ export async function changeUserNameSurname(userData) {
 }
 
 
-export async function changeUserValidDue(userData) {
-    const response = await fetch(`${API_URL}/api/change-validdue`, {
+export async function changeUserAvatar(userData) {
+    const response = await fetch(`${API_URL}/api/change-avatar`, {
+        method: 'PUT',
+        headers: {
+            'accessToken': localStorage.getItem('acc_token'),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+    });
+
+    if (!response.ok) {
+        throw new Error('Bad response');
+    }
+
+    return response.json();
+}
+
+export async function changeUserStatusRules(userData) {
+    const response = await fetch(`${API_URL}/api/change-status-rules`, {
         method: 'PUT',
         headers: {
             'accessToken': localStorage.getItem('acc_token'),
