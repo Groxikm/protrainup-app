@@ -209,6 +209,8 @@ export default {
           "backlog": this.editData.backlog,
         }
         await changeUserData(userDataJSON);
+        alert("Successfully updated user");
+        await this.getUserById();
         this.editing = false; // closing editing section
       } catch (error) {
         this.errorMessage = error.message || "Error updating data";
@@ -366,7 +368,12 @@ button {
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
+.edit-button {
+  background-color: #1976d2;
+  color: white;
 
+
+}
 .edit-form button:hover {
   background-color: #1976d2;
   transform: translateY(-2px);

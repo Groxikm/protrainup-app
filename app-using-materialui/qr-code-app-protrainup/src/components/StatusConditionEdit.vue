@@ -3,11 +3,11 @@
     <h2>Change Status Rules</h2>
     <form @submit.prevent="changeRules">
       <p><strong>Days scope:</strong> </p>
-      <input v-model="query.days_scope" placeholder="rules.days_scope" required />
+      <input v-model="query.days_scope" placeholder="Days_scope" required />
       <p><strong>Accepted Attendance %</strong> </p>
-      <input v-model="query.attendance" placeholder="rules.attendance" required />
+      <input v-model="query.attendance" placeholder="Attendance" required />
       <p><strong>Limit of unpaid months:</strong> </p>
-      <input v-model="query.backlog_limit" placeholder="rules.backlog_limit" required />
+      <input v-model="query.backlog_limit" placeholder="Backlog_limit" required />
     </form>
     <button @click=changeRules>Update Rules</button>
 
@@ -28,7 +28,7 @@ export default {
       query: {
         days_scope: '',
         attendance: '',
-        backlog_limit: '',
+        backlog_limit: 0,
       },
       rules: {},
       errorMessage: ''
@@ -51,7 +51,7 @@ export default {
         const jsonData = {
           "days_scope": formatInput((this.query.days_scope).toString(), 0, 1024),
           "attendance": formatInput((this.query.attendance).toString(), 0, 100),
-          "backlog_limit": formatInput((this.query.backlog_limit).toString(), 0, 30),
+          "backlog_limit": (this.query.backlog_limit).toString()
         }
         for (const key in jsonData) {
           if (!jsonData[key]) {

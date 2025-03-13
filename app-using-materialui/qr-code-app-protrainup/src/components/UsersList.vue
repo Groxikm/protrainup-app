@@ -43,7 +43,7 @@
             <div v-if="user.isEditing"><input v-model="editingUser.visit_frequency" placeholder="Visits" type="number"/></div>
           </td>
           <td>{{ user.club }}</td>
-          <td>{{ user.attendance }}</td>
+          <td>{{ attendanceCalculation(user.visit_frequency) }}</td>
           <td>
             <div v-if="!user.isEditing">{{ user.backlog }}</div>
             <div v-if="user.isEditing"><input v-model="editingUser.backlog" placeholder="Unpaid months" type="number"/></div>
@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import {findUserByNameSurname, findUserById, findUsers} from "../api/adminGETService.js";
+import {findRules, findUserByNameSurname, findUserById, findUsers, checkValidity} from "../api/adminGETService.js";
 import {changeUserData} from "../api/adminPUTService.js";
 
 const user_arr = [];
@@ -86,6 +86,7 @@ export default {
         name: "",
         surname: ""
       },
+      calc_rules: {},
       users: [],
       editingUser: null,
       currentlyEditingIndex: null,
@@ -98,6 +99,7 @@ export default {
   async mounted() {
     console.log(this.users, "THIS USERS");
     await this.loadMoreUsers();
+    await this.getRules();
   },
   methods: {
     async FindAndShowUser() {
@@ -207,7 +209,26 @@ export default {
       } catch (error) {
         this.errorMessage = error.message || "Error saving user changes";
       }
+    },
+    async getRules() {
+      try {
+        const data = await findRules();
+        this.calc_rules = data;
+
+      } catch (error) {
+
+      }
+
+    },
+    attendanceCalculation(visits){
+      try {
+        return Math.floor((parseFloat(visits) * 100) / parseFloat(this.calc_rules.days_scope));
+      } catch (e) {
+        return null;
+      }
+
     }
+
   }
 };
 </script>
