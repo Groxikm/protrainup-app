@@ -34,19 +34,22 @@ export default {
         });
 
         const data = await response.json();
-        //console.log(data);
-        localStorage.setItem("acc_token", data.accessToken);
-        if (response.ok) {
 
-          // Pass all necessary data to the WelcomePage
-          this.$router.push({
-            name: 'welcome',
-            query: {
-              id: data.id,
-              name: data.name,
-              surname: data.surname,
-            }
-          });
+        if (response.ok) {
+          localStorage.setItem("acc_token", data.accessToken);
+
+          if (data.role === "ADMIN") {
+            this.$router.push({ name: 'admin' });
+          } else {
+            this.$router.push({
+              name: 'welcome',
+              query: {
+                id: data.id,
+                name: data.name,
+                surname: data.surname,
+              },
+            });
+          }
         } else {
           alert(data.message || 'Login failed');
         }

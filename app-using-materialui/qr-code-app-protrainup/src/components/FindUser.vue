@@ -21,9 +21,27 @@
       <button class="edit-button" @click="toggleEdit">Edit</button>
 
       <div v-if="editing" class="edit-form">
-        <input v-model="editData.name" placeholder="New Name" />
-        <input v-model="editData.surname" placeholder="New Surname" />
-        <input v-model="editData.avatar_link" placeholder="New Avatar" />
+        <div class="form-group">
+          <p><strong>New Name:</strong></p>
+          <input v-model="editData.name" placeholder="New Name" />
+        </div>
+        <div class="form-group">
+          <p><strong>New Surname:</strong></p>
+          <input v-model="editData.surname" placeholder="New Surname" />
+        </div>
+        <div class="form-group">
+          <p><strong>New Avatar:</strong></p>
+          <input v-model="editData.avatar_link" placeholder="New Avatar" />
+        </div>
+        <div class="form-group">
+          <p><strong>New Backlog:</strong></p>
+          <input v-model="editData.backlog" placeholder="New Backlog" type="number" />
+        </div>
+        <div class="form-group">
+          <p><strong>New Visits:</strong></p>
+          <input v-model="editData.visit_frequency" placeholder="New Visits" type="number" />
+        </div>
+
         <button @click="updateUser">Save</button>
       </div>
     </div>
@@ -88,6 +106,8 @@ export default {
         name: "",
         surname: "",
         avatar_link: "",
+        visit_frequency: "",
+        backlog: "",
       },
       // Registration attempts data
       regAttempts: [],
@@ -181,10 +201,12 @@ export default {
     async updateUser() {
       try {
         const userDataJSON = {
-          id: this.userId,
-          name: this.editData.name,
-          surname: this.editData.surname,
-          avatar_link: this.editData.avatar_link,
+          "id": this.userId,
+          "name": this.editData.name,
+          "surname": this.editData.surname,
+          "avatar_link": this.editData.avatar_link,
+          "visit_frequency": this.editData.visit_frequency,
+          "backlog": this.editData.backlog,
         }
         await changeUserData(userDataJSON);
         this.editing = false; // closing editing section
@@ -291,13 +313,61 @@ button {
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.edit-button {
-  background-color: #2196f3;
-  color: white;
-  position: relative;
+ .edit-form {
+   display: flex;
+   flex-direction: column;
+   gap: 12px; /* Space between form groups */
+   width: 100%;
+   max-width: 500px; /* Limit the width for better readability */
+   padding: 20px;
+   margin: 11px auto;
+   background-color: #f9f9f9; /* Light gray background */
+   border: 1px solid #e0e0e0; /* Light border */
+   border-radius: 8px; /* Rounded corners */
+   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+ }
+
+.form-group {
+  display: flex;
+  align-items: center;
 }
 
-.edit-button:hover {
+.form-group p {
+  width: 150px; /* Adjust as necessary */
+  margin: 0;
+  padding-right: 10px;
+  font-weight: normal; /* Minimalistic font weight */
+  color: #333; /* Dark text color for contrast */
+}
+
+.form-group input {
+  flex: 1;
+  padding: 8px;
+  font-size: 14px; /* Smaller font size for minimalistic look */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fff;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: #2196f3;
+  outline: none;
+}
+
+.edit-form button {
+  align-self: flex-start; /* Align the button to the left */
+  padding: 10px 20px;
+  background-color: #2196f3;
+  color: white;
+  font-size: 14px; /* Smaller font size for minimalistic look */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.edit-form button:hover {
   background-color: #1976d2;
   transform: translateY(-2px);
 }
@@ -411,4 +481,6 @@ button {
   padding: 20px;
   color: #757575;
 }
+
+
 </style>
