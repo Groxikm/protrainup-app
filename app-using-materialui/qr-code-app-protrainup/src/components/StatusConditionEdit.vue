@@ -59,6 +59,7 @@ export default {
           }
         }
         await changeUserStatusRules(jsonData);
+        alert("Status Rules changed successfully.");
       } catch (error) {
         this.errorMessage = error.message || "Error editing conditions";
       }

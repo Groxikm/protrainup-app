@@ -58,6 +58,7 @@ export default {
           }
         }
         await addUser(jsonData);
+        alert("User Created successfully.");
       } catch (error) {
         this.errorMessage = error.message || "Error creating user";
       }
