@@ -14,7 +14,7 @@
       </div>
       <div class="avatar-container">
         <img :src="user.avatar_link" alt="User Avatar" class="avatar" />
-        <img v-if="user.club_link" :src="user.club_link" alt="Club Image" class="club" />
+        <img :src="user.club_link" alt="Club Image" class="club" />
       </div>
 
       <button class="delete-button" @click="deleteUser">Delete</button>
@@ -82,7 +82,8 @@
             class="load-more-button"
         >
           {{ loadingMore ? 'Loading...' : 'Load More' }}
-        </button>
+        </button>loadMessage
+        <div v-if="loadMessage" class="error-message">{{ errorMessage }}</div>
       </div>
     </div>
   </div>
@@ -100,6 +101,7 @@ export default {
       validity: false,
       status: "Red",
       user: null,
+      loadMessage: "No logs loaded",
       errorMessage: "",
       editing: false,
       editData: {
@@ -192,7 +194,7 @@ export default {
       }
       catch(error) {
         this.validity = false;
-        this.errorMessage = error.message || "Error checking validity";
+        this.errorMessage = "Error checking validity";
       }
       console.log('Pass button clicked');
     },
@@ -241,7 +243,7 @@ export default {
         this.latestDate = data.latestDate;
         this.hasMoreAttempts = true;//data.attempts.length === 20;
       } catch (error) {
-        this.errorMessage = error.message || "Error loading registration attempts";
+        this.loadMessage = "No more logs exist";
       } finally {
         this.loadingMore = false;
       }

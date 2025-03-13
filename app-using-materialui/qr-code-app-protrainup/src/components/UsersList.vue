@@ -51,7 +51,7 @@
           <td>
             <img v-if="!user.isEditing" :src="formatAvatar(user.avatar_link)" alt="Avatar" width="32" height="32">
             <div v-if="user.isEditing"><input v-model="editingUser.avatar_link" placeholder="Avatar URL"/></div>
-            <img :src="formatAvatar(user.club_link)" alt="Club" width="32" height="32">
+            <img :src="formatClub(user.club_link)" alt="Club" width="32" height="32">
           </td>
           <td>
             <button
@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import {findRules, findUserByNameSurname, findUserById, findUsers, checkValidity} from "../api/adminGETService.js";
+import {findRules, findUserByNameSurname, findUsers, checkValidity} from "../api/adminGETService.js";
 import {changeUserData} from "../api/adminPUTService.js";
 
 const user_arr = [];
@@ -90,7 +90,7 @@ export default {
       users: [],
       editingUser: null,
       currentlyEditingIndex: null,
-      lastUserId: null,
+      lastUserDate: null,
       limit: 10,
       searchUserErrorMessage: "",
       errorMessage: "",
@@ -137,8 +137,8 @@ export default {
 
     async loadMoreUsers() {
       try {
-        const data = await findUsers();
-        this.lastUserId = data.lastUserId;
+        const data = await findUsers(this.lastUserDate);
+        this.lastUserDate = data.last_date;
 
         // Initialize all users with isEditing property set to false
         const formattedUsers = data.users.map(user => ({
@@ -151,11 +151,16 @@ export default {
         console.log(data, this.users, "user arr", user_arr);
       } catch (error) {
         console.error('Error fetching users:', error);
-        this.errorMessage = error.message || "Error finding user";
+        this.errorMessage = "No more users exist";
       }
     },
+
+
     formatAvatar(avatarLink) {
-      return avatarLink && typeof avatarLink === 'string' ? avatarLink : 'https://via.placeholder.com/32';
+      return avatarLink && typeof avatarLink === 'string' ? avatarLink : 'https://via.placeholderA.com/32';
+    },
+    formatClub(clubLink) {
+      return clubLink && typeof clubLink === 'string' ? clubLink : 'https://via.placeholderB.com/32';
     },
 
 
