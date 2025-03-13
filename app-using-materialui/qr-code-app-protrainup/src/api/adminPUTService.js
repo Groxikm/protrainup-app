@@ -1,7 +1,7 @@
 import { API_URL } from "../settings.js";
 
-export async function changeUserNameSurname(userData) {
-    const response = await fetch(`${API_URL}/api/change-user-name`, {
+export async function changeUserData(userData) {
+    const response = await fetch(`${API_URL}/api/change-user-data`, {
         method: 'PUT',
         headers: {
             'accessToken': localStorage.getItem('acc_token'),
@@ -17,23 +17,6 @@ export async function changeUserNameSurname(userData) {
     return response.json();
 }
 
-
-export async function changeUserAvatar(userData) {
-    const response = await fetch(`${API_URL}/api/change-avatar`, {
-        method: 'PUT',
-        headers: {
-            'accessToken': localStorage.getItem('acc_token'),
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(userData)
-    });
-
-    if (!response.ok) {
-        throw new Error('Bad response');
-    }
-
-    return response.json();
-}
 
 export async function changeUserStatusRules(userData) {
     const response = await fetch(`${API_URL}/api/change-status-rules`, {

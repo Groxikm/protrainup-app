@@ -6,9 +6,10 @@
     >
       <div class="user-details">
         <h3>{{ user.name }} {{ user.surname }}</h3>
+        <p><strong>Team:</strong> {{ user.team }}</p>
         <p><strong>Login:</strong> {{ user.login }}</p>
         <p><strong>Club:</strong> {{ user.club }}</p>
-        <p><strong>Attendance:</strong> {{ user.attendance }}</p>
+        <p><strong>Attendance:</strong> {{ user.attendance }} %</p>
         <p><strong>Number of unpaid months:</strong> {{ user.backlog }} </p>
       </div>
       <div class="avatar-container">
@@ -71,7 +72,7 @@
 
 <script>
 import { findUserById, checkValidity, findUserRegAttempts } from "../api/adminGETService.js";
-import { changeUserNameSurname, changeUserAvatar, deleteUser } from "../api/adminPUTService.js";
+import { changeUserData, deleteUser } from "../api/adminPUTService.js";
 import { addRegAttempt} from "../api/adminPOSTService.js";
 
 export default {
@@ -79,7 +80,7 @@ export default {
     return {
       userId: "",
       validity: false,
-      status: "Red", // Default status
+      status: "Red",
       user: null,
       errorMessage: "",
       editing: false,
@@ -110,17 +111,24 @@ export default {
       }
     },
     showPassButton() {
-      return this.status === 'Red' || this.status === 'Orange b' || this.status === 'Orange f';
+      if (this.userId)
+        return this.status === 'Red' || this.status === 'Orange b' || this.status === 'Orange f';
+      else
+        return false
     }
   },
-  mounted() {
+
+
+  async mounted() {
     this.userId = localStorage.getItem("last_scanned_id");
     if (this.userId !== null) {
-      this.getUserById(this.userId);
-      this.getValidityStatus(this.userId);
-      this.getRegAttempts();
+      await this.getUserById(this.userId);
+      await this.getValidityStatus(this.userId);
+      await this.getRegAttempts();
     } else this.errorMessage = "No user ID found.";
   },
+
+
   methods: {
     // Search and load functionality
     async getUserById() {
@@ -140,13 +148,6 @@ export default {
       } catch (error) {
         this.validity = false;
         this.errorMessage = error.message || "Error checking validity";
-      }
-    },
-
-    async loadUserCardById() {
-      if (this.userId !== null) {
-        await this.getUserById(this.userId);
-        await this.getValidityStatus(this.userId);
       }
     },
 
@@ -178,34 +179,17 @@ export default {
 
     // This method handles three input field name, surname, avatar link to run changes in a single click
     async updateUser() {
-      if (this.editData.name !== null || this.editData.surname !== null) {
-        try {
-          const userDataJSON = {
-            id: this.userId,
-            name: this.editData.name,
-            surname: this.editData.surname
-          }
-          await changeUserNameSurname(userDataJSON);
-          this.editing = false;
-        } catch (error) {
-          this.errorMessage = error.message || "Error updating name surname";
+      try {
+        const userDataJSON = {
+          id: this.userId,
+          name: this.editData.name,
+          surname: this.editData.surname,
+          avatar_link: this.editData.avatar_link,
         }
-      }
-      if (this.editData.avatar_link !== null) {
-        try {
-          const userDataJSON = {
-            id: this.userId,
-            avatar_link: this.editData.avatar_link,
-          }
-          await changeUserAvatar(userDataJSON);
-          this.editing = false;
-        } catch (error) {
-          this.errorMessage = error.message || "Error updating name surname";
-        }
-      }
-      if (this.userId !== null) {
-        await this.getUserById(this.userId);
-        await this.getValidityStatus(this.userId);
+        await changeUserData(userDataJSON);
+        this.editing = false; // closing editing section
+      } catch (error) {
+        this.errorMessage = error.message || "Error updating data";
       }
     },
 

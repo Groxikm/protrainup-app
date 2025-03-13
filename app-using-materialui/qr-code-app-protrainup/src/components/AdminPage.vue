@@ -8,7 +8,7 @@
       <button @click="currentComponent = 'StatusConditionEdit'">Rules edit</button>
     </div>
 
-    <component :is="currentComponent" @id-scanned="handleIdScanned"/>
+    <component :is="currentComponent" @id-scanned="handleIdScanned" @switch-component="switchComponent" @change-stored-userId="handleUserIdChange"/>
 </template>
 
 <script>
@@ -35,7 +35,7 @@ export default {
       attempts: [],
       latestDateId: null,
       hasMore: true,
-      currentComponent: 'CreateUser'
+      currentComponent: 'UsersList'
     };
   },
   methods: {
@@ -50,9 +50,20 @@ export default {
       addRegAttemptGreen(userDataJson);
       this.currentComponent = FindUser;
     },
-    requestComponentChange(newComponent) {
-      this.$emit('change-component', newComponent);
+
+    handleUserIdChange(userId) {
+      this.userId = userId;
+      console.log("User ID changed:", this.userId);
+      localStorage.setItem("last_scanned_id", this.userId);
     },
+
+    switchComponent(componentName) {
+      if (componentName) {
+        this.currentComponent = componentName;
+      } else {
+        console.error(`Component ${componentName} not found`);
+      }
+    }
   }
 };
 </script>

@@ -12,7 +12,7 @@
       </tr>
       </thead>
       <tbody>
-      <tr v-for="(user, index) in users" :key="user.id">
+      <tr v-for="(user, index) in attempts" :key="user.id">
         <td>{{ index + 1 }}</td>
         <td>{{ user.name }}</td>
         <td>{{ user.surname }}</td>
@@ -34,7 +34,7 @@
 <script>
 import {findAllRegAttempts} from "../api/adminGETService.js";
 
-const user_arr =[];
+const attempts_arr =[];
 export default {
 
   data() {
@@ -44,43 +44,32 @@ export default {
         name: "",
         surname: ""
       },
-      users: [],
+      attempts: [],
       lastUserId: null,
       limit: 10,
       errorMessage: "",
     };
   },
   async mounted() {
-    console.log(this.users, "THIS USERS");
+    console.log(this.attempts, "THIS USERS");
     await this.loadMoreUsers();
   },
   methods: {
     async loadMoreUsers() {
       try {
-        const data = await findUsers();
+        const data = await findAllRegAttempts();
 
         this.lastUserId = data.lastUserId;
-        this.users.push(...data.users);
-        user_arr.push(...data.users);
-        console.log(data, this.users, "user arr", user_arr);
+        this.attempts.push(...data.attempts);
+        attempts_arr.push(...data.attempts);
+        console.log(data, this.attempts, "att arr", attempts_arr);
       } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('Error fetching attempts:', error);
         this.errorMessage = error.message || "Error finding user";
       }
     },
     formatAvatar(avatarLink) {
       return avatarLink && typeof avatarLink === 'string' ? avatarLink : 'https://via.placeholder.com/32';
-    },
-    async getUserByNameSurname() {
-      try {
-        this.user = await findUserByNameSurname(this.query.name, this.query.surname);
-        if (this.user) {
-          await this.getValidityStatus(this.user.id);
-        }
-      } catch (error) {
-        this.user = null;
-        this.errorMessage = error.message || "Error finding user";
-      }
     },
   }
 };

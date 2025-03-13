@@ -8,6 +8,7 @@
       <input type="password" v-model="query.password" placeholder="Password" required />
       <input v-model="query.avatar_link" placeholder="Avatar Img" required />
       <input v-model="query.club" placeholder="Club" required />
+      <input v-model="query.team" placeholder="Team" required />
       <input v-model="query.club_link" placeholder="Club Img" required />
       <button type="submit">Submit</button>
     </form>
@@ -30,6 +31,7 @@ export default {
         login: '',
         password: '',
         avatar_link: '',
+        team: '',
         club: '',
         club_link: ''
       },
@@ -46,6 +48,7 @@ export default {
           "login": this.query.login,
           "password": this.query.password,
           "avatar_link": this.query.avatar_link,
+          "team": this.query.team,
           "club": this.query.club,
           "club_link": this.query.club_link,
         }

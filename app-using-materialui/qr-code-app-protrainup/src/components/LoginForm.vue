@@ -45,7 +45,6 @@ export default {
               id: data.id,
               name: data.name,
               surname: data.surname,
-              valid_due: data.valid_due
             }
           });
         } else {

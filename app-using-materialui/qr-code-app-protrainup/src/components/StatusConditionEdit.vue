@@ -2,10 +2,15 @@
   <div>
     <h2>Change Status Rules</h2>
     <form @submit.prevent="changeRules">
-      <input v-model="query.days_scope" placeholder="Days_scope" required />
-      <input v-model="query.attendance" placeholder="Attendance %" required />
-      <input v-model="query.backlog_limit" placeholder="Limit of unpaid month" required />
+      <p><strong>Days scope:</strong> </p>
+      <input v-model="query.days_scope" placeholder="rules.days_scope" required />
+      <p><strong>Accepted Attendance %</strong> </p>
+      <input v-model="query.attendance" placeholder="rules.attendance" required />
+      <p><strong>Limit of unpaid months:</strong> </p>
+      <input v-model="query.backlog_limit" placeholder="rules.backlog_limit" required />
     </form>
+    <button @click=changeRules>Update Rules</button>
+
     <div v-if="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>
@@ -14,6 +19,8 @@
 
 <script>
 import {changeUserStatusRules} from "../api/adminPUTService.js";
+import {findRules} from "../api/adminGETService.js";
+import {formatInput} from "../utils/formatInput.js";
 
 export default {
   data() {
@@ -23,16 +30,28 @@ export default {
         attendance: '',
         backlog_limit: '',
       },
+      rules: {},
       errorMessage: ''
     };
   },
+  async mounted() {
+    try {
+      this.rules = await findRules();
+      this.query.days_scope = this.rules.days_scope || '';
+      this.query.attendance = this.rules.attendance || '';
+      this.query.backlog_limit = this.rules.backlog_limit || '';
+    } catch (error) {
+      console.log(error);
+    }
+  },
   methods: {
     async changeRules() {
+
       try {
         const jsonData = {
-          "days_scope": this.query.days_scope,
-          "attendance": this.query.attendance,
-          "backlog_limit": this.query.backlog_limit,
+          "days_scope": formatInput((this.query.days_scope).toString(), 0, 1024),
+          "attendance": formatInput((this.query.attendance).toString(), 0, 100),
+          "backlog_limit": formatInput((this.query.backlog_limit).toString(), 0, 30),
         }
         for (const key in jsonData) {
           if (!jsonData[key]) {

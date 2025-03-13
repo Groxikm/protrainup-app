@@ -22,6 +22,20 @@ export async function findUserByNameSurname(userName, userSurname) {
             'accessToken': localStorage.getItem('acc_token'),
         }
     });
+    if (!response.ok) {
+        throw new Error('Bad response');
+    }
+    return response.json();
+}
+
+
+export async function findUserById(userId) {
+    const response = await fetch(`${API_URL}/api/find-user-by-id?id=${userId}`, {
+        method: 'GET',
+        headers: {
+            'accessToken': localStorage.getItem('acc_token'),
+        }
+    });
 
     if (!response.ok) {
         throw new Error('Bad response');
@@ -30,9 +44,8 @@ export async function findUserByNameSurname(userName, userSurname) {
     return response.json();
 }
 
-
-export async function findUserById(userId) {
-    const response = await fetch(`${API_URL}/api/find-user-by-id?id=${userId}`, {
+export async function findRules(userId) {
+    const response = await fetch(`${API_URL}/api/find-rules?`, {
         method: 'GET',
         headers: {
             'accessToken': localStorage.getItem('acc_token'),
