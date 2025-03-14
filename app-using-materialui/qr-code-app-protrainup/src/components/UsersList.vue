@@ -19,6 +19,7 @@
           <th>Surname</th>
           <th>Login</th>
           <th>Visits</th>
+          <th>Team</th>
           <th>Club</th>
           <th>Attendance</th>
           <th>Unpaid months</th>
@@ -42,6 +43,7 @@
             <div v-if="!user.isEditing">{{ user.visit_frequency }}</div>
             <div v-if="user.isEditing"><input v-model="editingUser.visit_frequency" placeholder="Visits" type="number"/></div>
           </td>
+          <td>{{ user.team }}</td>
           <td>{{ user.club }}</td>
           <td>{{ attendanceCalculation(user.visit_frequency) }}</td>
           <td>
@@ -51,7 +53,7 @@
           <td>
             <img v-if="!user.isEditing" :src="formatAvatar(user.avatar_link)" alt="Avatar" width="32" height="32">
             <div v-if="user.isEditing"><input v-model="editingUser.avatar_link" placeholder="Avatar URL"/></div>
-            <img :src="formatClub(user.club_link)" alt="Club" width="32" height="32">
+            <img v-if="!user.isEditing" :src="formatClub(user.club_link)" alt="Club" width="32" height="32">
           </td>
           <td>
             <button
@@ -111,16 +113,9 @@ export default {
           return;
         }
 
-        const token = localStorage.getItem('acc_token');
-        if (!token) {
-          this.searchUserErrorMessage = "Missing authentication token";
-          return;
-        }
-
         const searchedUser = await findUserByNameSurname(this.query.name, this.query.surname);
         console.log("API Response:", searchedUser);
 
-        // Adjust this based on actual API response
         const searchedUserId = searchedUser.id || (searchedUser.data && searchedUser.data.id);
 
         if (searchedUserId) {

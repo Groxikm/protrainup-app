@@ -75,6 +75,7 @@
       <div v-else class="no-data-message">No registration attempts found.</div>
 
       <!-- Pagination Controls -->
+      <!-- {{ loadingMore ? 'Loading...' : 'Load More' }} is currently not adjusted so it's disabled -->
       <div class="pagination-controls">
         <button
             @click="loadMoreAttempts"
@@ -82,8 +83,8 @@
             class="load-more-button"
         >
           {{ loadingMore ? 'Loading...' : 'Load More' }}
-        </button>loadMessage
-        <div v-if="loadMessage" class="error-message">{{ errorMessage }}</div>
+        </button>
+        <div v-if="loadMessage" class="error-message">{{ loadMessage }}</div>
       </div>
     </div>
   </div>
@@ -162,7 +163,7 @@ export default {
       }
     },
 
-    async getValidityStatus(userId) {
+    async getValidityStatus(userId = this.userId) {
       try {
         const data = await checkValidity(userId);
         this.status = data.status;
@@ -213,6 +214,7 @@ export default {
         await changeUserData(userDataJSON);
         alert("Successfully updated user");
         await this.getUserById();
+        await this.getValidityStatus();
         this.editing = false; // closing editing section
       } catch (error) {
         this.errorMessage = error.message || "Error updating data";
@@ -222,7 +224,10 @@ export default {
     async deleteUser() {
       try {
         await deleteUser(this.user.id);
+        // clearing local data of the deleted user
         this.user = null;
+        this.$emit('change-stored-userId', "");
+        this.$emit('switch-component', 'UsersList');
       } catch (error) {
         this.errorMessage = error.message || "Error deleting user";
       }
@@ -491,5 +496,12 @@ button {
   color: #757575;
 }
 
-
+.error-message {
+  color: #f44336;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #ffebee;
+  border-radius: 4px;
+  text-align: center;
+}
 </style>

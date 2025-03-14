@@ -5,6 +5,7 @@
       <input type="text" v-model="username" placeholder="Login" required />
       <input type="password" v-model="password" placeholder="Password" required />
       <button type="submit" class="special-button">Login</button>
+      <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
     </form>
   </div>
 </template>
@@ -17,15 +18,26 @@ export default {
     return {
       username: '',
       password: '',
+      errorMessage: '',
     };
   },
+
+  mounted() {
+    const token = localStorage.getItem('acc_token');
+      if(token || token !== null) {
+        this.handleLogin(token);
+      }
+    this.errorMessage = '';
+  },
+
   methods: {
-    async handleLogin() {
+    async handleLogin(token = "") {
       try {
         const response = await fetch(`${API_URL}/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'accessToken': token
           },
           body: JSON.stringify({
             login: this.username,
@@ -51,7 +63,10 @@ export default {
             });
           }
         } else {
-          alert(data.message || 'Login failed');
+          if (token || token !== null) {
+            this.errorMessage = "Login Failed";
+          }
+          //alert(data.message || 'Login failed');
         }
       } catch (error) {
         console.error('Error during login:', error);
@@ -156,5 +171,14 @@ a:hover {
     font-size: 14px;
     padding: 8px 16px;
   }
+}
+
+.error-message {
+  color: #f44336;
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #ffebee;
+  border-radius: 4px;
+  text-align: center;
 }
 </style>
