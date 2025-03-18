@@ -3,10 +3,13 @@
     <div class="search-panel">
       <h2>Open User Card by:</h2>
       <form>
-        <!--Change the search panel here to run the search by value in users, and the search to return id, which is then used to receive user via findUserById()     -->
-        <input v-model="query.name" placeholder="Name" />
-        <input v-model="query.surname" placeholder="Surname" />
-        <button @click.prevent="FindAndShowUser" type="submit" class="search-button">Find and Show User</button>
+        <input
+            v-model="searchQuery"
+            @input="filterUsers"
+            placeholder="Search (club, team, name, surname, login)"
+            class="search-input"
+        />
+        <button @click.prevent="searchAndShowUser" type="submit" class="search-button">Find and Show User</button>
         <div v-if="searchUserErrorMessage" class="error-message">{{ searchUserErrorMessage }}</div>
       </form>
     </div>
@@ -28,7 +31,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr v-for="(user, index) in users" :key="user.id" :class="{ 'editing-row': user.isEditing }">
+        <tr v-for="(user, index) in filteredUsers" :key="user.id" :class="{ 'editing-row': user.isEditing }">
           <td>{{ index + 1 }}</td>
           <td>
             <img v-if="!user.isEditing" :src="formatAvatar(user.avatar_link)" alt="Avatar" width="32" height="32">
@@ -82,6 +85,7 @@ const user_arr = [];
 export default {
   data() {
     return {
+      searchQuery: "",
       query: {
         id: "",
         name: "",
@@ -90,6 +94,7 @@ export default {
       userId_for_search:'',
       calc_rules: {},
       users: [],
+      filteredUsers: [],
       editingUser: null,
       currentlyEditingIndex: null,
       lastUserDate: null,
@@ -99,21 +104,106 @@ export default {
     };
   },
   async mounted() {
-    //console.log(this.users, "THIS USERS");
     await this.loadMoreUsers();
     await this.getRules();
   },
   methods: {
-    async FindAndShowUser() {
+    // Format string for name/surname (first letter uppercase, rest lowercase)
+    formatNameString(str) {
+      if (!str) return "";
+      str = str.trim();
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    },
+
+    // Filter users based on search query
+    filterUsers() {
+      const query = this.searchQuery.trim().toLowerCase();
+
+      if (!query) {
+        this.filteredUsers = [...this.users];
+        return;
+      }
+
+      this.filteredUsers = this.users.filter(user => {
+        // Search priority: club, team, name, surname, login
+        return (
+            (user.club && user.club.toLowerCase().includes(query)) ||
+            (user.team && user.team.toLowerCase().includes(query)) ||
+            (user.name && user.name.toLowerCase().includes(query)) ||
+            (user.surname && user.surname.toLowerCase().includes(query)) ||
+            (user.login && user.login.toLowerCase().includes(query)) ||
+            // Check other fields if needed
+            (user.backlog && user.backlog.toString().includes(query)) ||
+            (user.visit_frequency && user.visit_frequency.toString().includes(query))
+        );
+      });
+    },
+
+    // Search for a specific user on button click
+    async searchAndShowUser() {
       try {
         this.searchUserErrorMessage = "";
+        const query = this.searchQuery.trim();
 
-        if (!this.query.name || !this.query.surname) {
-          this.searchUserErrorMessage = "Please enter both name and surname";
+        if (!query) {
+          this.searchUserErrorMessage = "Please enter a search term";
           return;
         }
 
-        const searchedUser = await findUserById(this.data.userId_for_search);
+        // Format name/surname for searching
+        const formattedQuery = this.formatNameString(query);
+
+        // First try to find by login (exact match, no formatting)
+        let foundUser = this.users.find(user =>
+            user.login && user.login.toLowerCase() === query.toLowerCase()
+        );
+
+        // If not found by login, try by name or surname (with formatting)
+        if (!foundUser) {
+          foundUser = this.users.find(user =>
+              (user.name && this.formatNameString(user.name) === formattedQuery) ||
+              (user.surname && this.formatNameString(user.surname) === formattedQuery)
+          );
+        }
+
+        // If still not found, try by full name (with formatting)
+        if (!foundUser) {
+          // Split query by space to check for "Name Surname" format
+          const parts = query.split(' ');
+          if (parts.length >= 2) {
+            const formattedFirstName = this.formatNameString(parts[0]);
+            const formattedLastName = this.formatNameString(parts[1]);
+
+            foundUser = this.users.find(user =>
+                user.name && user.surname &&
+                this.formatNameString(user.name) === formattedFirstName &&
+                this.formatNameString(user.surname) === formattedLastName
+            );
+          }
+        }
+
+        if (foundUser) {
+          // Call the FindAndShowUser function with the found user's ID
+          await this.FindAndShowUser(foundUser.id);
+        } else {
+          this.searchUserErrorMessage = "User not found";
+        }
+      } catch (error) {
+        console.error("Error searching for user:", error);
+        this.searchUserErrorMessage = error.message || "Error finding user";
+      }
+    },
+
+    async FindAndShowUser(userId) {
+      try {
+        this.searchUserErrorMessage = "";
+
+        if (!userId) {
+          this.searchUserErrorMessage = "User ID is required";
+          return;
+        }
+
+        const searchedUser = await findUserById(userId);
         console.log("API Response:", searchedUser);
 
         const searchedUserId = searchedUser.id || (searchedUser.data && searchedUser.data.id);
@@ -142,6 +232,7 @@ export default {
         }));
 
         this.users.push(...formattedUsers);
+        this.filteredUsers = [...this.users]; // Initialize filtered users with all users
         user_arr.push(...data.users);
         console.log(data, this.users, "user arr", user_arr);
       } catch (error) {
@@ -150,32 +241,34 @@ export default {
       }
     },
 
-
     formatAvatar(avatarLink) {
       return avatarLink && typeof avatarLink === 'string' ? avatarLink : 'https://via.placeholderA.com/32';
     },
+
     formatClub(clubLink) {
       return clubLink && typeof clubLink === 'string' ? clubLink : 'https://via.placeholderB.com/32';
     },
-
 
     handleEditButton(user, index) {
       // If this user is already in edit mode, save the changes
       if (user.isEditing) {
         this.saveUserChanges();
-
       } else {
         // Cancel editing for any other user
         this.cancelAllEditing();
 
         // Set the current user to edit mode
-        this.users[index].isEditing = true;
-        this.currentlyEditingIndex = index;
+        const actualIndex = this.users.findIndex(u => u.id === user.id);
+        if (actualIndex !== -1) {
+          this.users[actualIndex].isEditing = true;
+          this.currentlyEditingIndex = actualIndex;
 
-        // Create a copy of the user data for editing
-        this.editingUser = { ...user };
+          // Create a copy of the user data for editing
+          this.editingUser = { ...this.users[actualIndex] };
+        }
       }
     },
+
     cancelAllEditing() {
       this.users.forEach(user => {
         user.isEditing = false;
@@ -183,7 +276,6 @@ export default {
       this.currentlyEditingIndex = null;
       this.editingUser = null;
     },
-
 
     async saveUserChanges() {
       if (!this.editingUser || this.currentlyEditingIndex === null) return;
@@ -204,12 +296,26 @@ export default {
         Object.assign(this.users[this.currentlyEditingIndex], this.editingUser);
         this.users[this.currentlyEditingIndex].isEditing = false;
 
+        // Update filtered users to reflect changes
+        this.filterUsers();
+
         this.currentlyEditingIndex = null;
         this.editingUser = null;
       } catch (error) {
         this.errorMessage = error.message || "Error saving user changes";
       }
     },
+
+    // Add the missing getRules method to prevent errors
+    async getRules() {
+      // Implementation would depend on what this method is supposed to do
+      // For now, adding an empty placeholder to prevent errors
+      try {
+        // Add implementation if needed
+      } catch (error) {
+        console.error('Error fetching rules:', error);
+      }
+    }
   }
 };
 </script>
@@ -241,6 +347,10 @@ export default {
   border: 1px solid #ddd;
   border-radius: 4px;
   flex: 1;
+}
+
+.search-input {
+  min-width: 300px;
 }
 
 .search-button {
