@@ -63,7 +63,7 @@ export default {
             });
           }
         } else {
-          if (token || token !== null) {
+          if ((token || token !== null) && this.password !== undefined && this.login !== undefined) {
             this.errorMessage = "Login Failed";
             localStorage.setItem("acc_token", null);
           }
