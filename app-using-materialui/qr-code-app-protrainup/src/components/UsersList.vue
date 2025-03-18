@@ -15,58 +15,60 @@
     </div>
 
     <div class="user-table-container">
-      <table class="user-table">
-        <thead>
-        <tr>
-          <th>#</th>
-          <th>Avatar</th>
-          <th>Name</th>
-          <th>Surname</th>
-          <th>Login</th>
-          <th>Team</th>
-          <th>Club</th>
-          <th>Attendance</th>
-          <th>Unpaid months</th>
-          <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="(user, index) in filteredUsers" :key="user.id" :class="{ 'editing-row': user.isEditing }">
-          <td>{{ index + 1 }}</td>
-          <td>
-            <img v-if="!user.isEditing" :src="formatAvatar(user.avatar_link)" alt="Avatar" width="32" height="32">
-            <div v-if="user.isEditing"><input v-model="editingUser.avatar_link" placeholder="Avatar URL"/></div>
-            <img v-if="!user.isEditing" :src="formatClub(user.club_link)" alt="Club" width="32" height="32">
-          </td>
-          <td>
-            <div v-if="!user.isEditing">{{ user.name }}</div>
-            <div v-if="user.isEditing"><input v-model="editingUser.name" placeholder="Name"/></div>
-          </td>
-          <td>
-            <div v-if="!user.isEditing">{{ user.surname }}</div>
-            <div v-if="user.isEditing"><input v-model="editingUser.surname" placeholder="Surname"/></div>
-          </td>
-          <td>{{ user.login }}</td>
-          <td>{{ user.team }}</td>
-          <td>{{ user.club }}</td>
-          <td>
-            <div v-if="!user.isEditing">{{ user.visit_frequency }} %</div>
-            <div v-if="user.isEditing"><input v-model="editingUser.visit_frequency" placeholder="Visits" type="number"/></div>
-          </td>
-          <td>
-            <div v-if="!user.isEditing">{{ user.backlog }}</div>
-            <div v-if="user.isEditing"><input v-model="editingUser.backlog" placeholder="Unpaid months" type="number"/></div>
-          </td>
-          <td>
-            <button
-                @click="handleEditButton(user, index)"
-                :class="{ 'edit-button': !user.isEditing, 'confirm-button': user.isEditing }">
-              {{ user.isEditing ? 'Confirm' : 'Edit' }}
-            </button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
+      <div class="table-wrapper">
+        <table class="user-table">
+          <thead>
+          <tr>
+            <th>#</th>
+            <th>Avatar</th>
+            <th>Name</th>
+            <th>Surname</th>
+            <th>Login</th>
+            <th>Team</th>
+            <th>Club</th>
+            <th>Attendance</th>
+            <th>Unpaid months</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="(user, index) in filteredUsers" :key="user.id" :class="{ 'editing-row': user.isEditing }">
+            <td>{{ index + 1 }}</td>
+            <td>
+              <img v-if="!user.isEditing" :src="formatAvatar(user.avatar_link)" alt="Avatar" width="32" height="32">
+              <div v-if="user.isEditing"><input v-model="editingUser.avatar_link" placeholder="Avatar URL"/></div>
+              <img v-if="!user.isEditing" :src="formatClub(user.club_link)" alt="Club" width="32" height="32">
+            </td>
+            <td>
+              <div v-if="!user.isEditing">{{ user.name }}</div>
+              <div v-if="user.isEditing"><input v-model="editingUser.name" placeholder="Name"/></div>
+            </td>
+            <td>
+              <div v-if="!user.isEditing">{{ user.surname }}</div>
+              <div v-if="user.isEditing"><input v-model="editingUser.surname" placeholder="Surname"/></div>
+            </td>
+            <td>{{ user.login }}</td>
+            <td>{{ user.team }}</td>
+            <td>{{ user.club }}</td>
+            <td>
+              <div v-if="!user.isEditing">{{ user.visit_frequency }} %</div>
+              <div v-if="user.isEditing"><input v-model="editingUser.visit_frequency" placeholder="Visits" type="number"/></div>
+            </td>
+            <td>
+              <div v-if="!user.isEditing">{{ user.backlog }}</div>
+              <div v-if="user.isEditing"><input v-model="editingUser.backlog" placeholder="Unpaid months" type="number"/></div>
+            </td>
+            <td>
+              <button
+                  @click="handleEditButton(user, index)"
+                  :class="{ 'edit-button': !user.isEditing, 'confirm-button': user.isEditing }">
+                {{ user.isEditing ? 'Confirm' : 'Edit' }}
+              </button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
 
       <div class="pagination-controls">
         <button @click="loadMoreUsers" class="load-more-button">Load More</button>
@@ -76,6 +78,9 @@
     </div>
   </div>
 </template>
+
+
+
 
 <script>
 import {findUserById, findUsers} from "../api/adminGETService.js";
@@ -472,5 +477,15 @@ input {
   background-color: #ffebee;
   border-radius: 4px;
   text-align: center;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.user-table {
+  width: 100%;
+  min-width: 800px; /* Ensures the table doesn't shrink too much */
+  border-collapse: collapse;
 }
 </style>

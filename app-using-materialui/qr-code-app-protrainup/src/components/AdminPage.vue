@@ -2,6 +2,9 @@
   <div class="admin-panel">
     <header class="admin-header">
       <h1>Manage Users</h1>
+      <button @click="logout" class="logout-button">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
     </header>
 
     <nav class="admin-nav">
@@ -19,6 +22,11 @@
         <li>
           <button @click="currentComponent = 'UsersList'" :class="{ 'active': currentComponent === 'UsersList' }">
             <i class="fas fa-list"></i> Users List
+          </button>
+        </li>
+        <li>
+          <button @click="currentComponent = 'UserAttemptsTable'" :class="{ 'active': currentComponent === 'UserAttemptsTable' }">
+            <i class="fas fa-list"></i> Registration List
           </button>
         </li>
         <li>
@@ -55,6 +63,7 @@ import CreateUser from './CreateUser.vue';
 import FindUser from './FindUser.vue';
 import UsersList from './UsersList.vue';
 import ScanPage from './ScanPage.vue';
+import UserAttemptsTable from './UserAttemptsTable.vue';
 import StatusConditionEdit from './StatusConditionEdit.vue';
 
 import { addRegAttempt, addRegAttemptGreen } from "../api/adminPOSTService.js";
@@ -65,6 +74,7 @@ export default {
     FindUser,
     UsersList,
     ScanPage,
+    UserAttemptsTable,
     StatusConditionEdit,
   },
   data() {
@@ -101,8 +111,14 @@ export default {
       } else {
         console.error(`Component ${componentName} not found`);
       }
-    }
-  }
+    },
+
+    logout() {
+      console.log('Logging out...');
+      localStorage.removeItem('acc_token');
+      this.$router.push('/'); // Redirect to the login page
+    },
+  },
 };
 </script>
 
@@ -124,12 +140,34 @@ export default {
   padding: 20px;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between; /* Space out title and logout button */
+  align-items: center;
 }
 
 .admin-header h1 {
   margin: 0;
   font-size: 24px;
   font-weight: bold;
+}
+
+/* Logout button styling */
+.logout-button {
+  background-color: #d32f2f; /* Red color for logout */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.logout-button:hover {
+  background-color: #b71c1c; /* Darker red on hover */
 }
 
 /* Navigation bar styling */
@@ -202,6 +240,15 @@ export default {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .admin-header {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .logout-button {
+    margin-top: 10px;
+  }
+
   .admin-nav {
     padding: 10px;
   }
