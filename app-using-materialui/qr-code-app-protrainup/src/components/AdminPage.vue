@@ -1,14 +1,52 @@
 <template>
-    <div>
-      <h2>Manage Users</h2>
-      <button @click="currentComponent = 'CreateUser'">Create User</button>
-      <button @click="currentComponent = 'FindUser'">User Panel</button>
-      <button @click="currentComponent = 'UsersList'">Users List</button>
-      <button @click="currentComponent = 'ScanPage'">Scan User QR</button>
-      <button @click="currentComponent = 'StatusConditionEdit'">Rules edit</button>
-    </div>
+  <div class="admin-panel">
+    <header class="admin-header">
+      <h1>Manage Users</h1>
+    </header>
 
-    <component :is="currentComponent" @id-scanned="handleIdScanned" @switch-component="switchComponent" @change-stored-userId="handleUserIdChange"/>
+    <nav class="admin-nav">
+      <ul class="nav-list">
+        <li>
+          <button @click="currentComponent = 'CreateUser'" :class="{ 'active': currentComponent === 'CreateUser' }">
+            <i class="fas fa-user-plus"></i> Create User
+          </button>
+        </li>
+        <li>
+          <button @click="currentComponent = 'FindUser'" :class="{ 'active': currentComponent === 'FindUser' }">
+            <i class="fas fa-user"></i> User Panel
+          </button>
+        </li>
+        <li>
+          <button @click="currentComponent = 'UsersList'" :class="{ 'active': currentComponent === 'UsersList' }">
+            <i class="fas fa-list"></i> Users List
+          </button>
+        </li>
+        <li>
+          <button @click="currentComponent = 'ScanPage'" :class="{ 'active': currentComponent === 'ScanPage' }">
+            <i class="fas fa-qrcode"></i> Scan User QR
+          </button>
+        </li>
+        <li>
+          <button @click="currentComponent = 'StatusConditionEdit'" :class="{ 'active': currentComponent === 'StatusConditionEdit' }">
+            <i class="fas fa-cogs"></i> Rules Edit
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <main class="admin-content">
+      <component
+          :is="currentComponent"
+          @id-scanned="handleIdScanned"
+          @switch-component="switchComponent"
+          @change-stored-userId="handleUserIdChange"
+      />
+    </main>
+
+    <footer class="admin-footer">
+      <p>&copy; 2025 User Management System</p>
+    </footer>
+  </div>
 </template>
 
 <script>
@@ -19,7 +57,7 @@ import UsersList from './UsersList.vue';
 import ScanPage from './ScanPage.vue';
 import StatusConditionEdit from './StatusConditionEdit.vue';
 
-import {addRegAttempt, addRegAttemptGreen} from "../api/adminPOSTService.js";
+import { addRegAttempt, addRegAttemptGreen } from "../api/adminPOSTService.js";
 
 export default {
   components: {
@@ -32,7 +70,7 @@ export default {
   data() {
     return {
       userId: '',
-      attempts: [],
+      attempts:[],
       latestDateId: null,
       hasMore: true,
       currentComponent: 'UsersList'
@@ -69,97 +107,117 @@ export default {
 </script>
 
 <style scoped>
-/* Container for the entire component */
-div {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-
-}
-
-/* Heading */
-h2 {
-  font-size: 28px;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  text-align: center;
-  font-weight: bold;
-}
-
-/* Button container */
-.button-container {
+/* Base styles for the admin panel layout */
+.admin-panel {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  margin-bottom: 30px;
-
+  flex-direction: column;
+  background-color: #f4f6f8; /* Light background */
+  color: #333;
 }
 
-/* General button styling */
-button {
-
-  position: relative;
-  margin: 3px 3px;
-  background-color: #3498db; /* Blue */
-  border: none;
+/* Header styling */
+.admin-header {
+  background-color: #2c3e50; /* Dark header background */
   color: white;
-  padding: 12px 24px;
-  font-size: 16px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admin-header h1 {
+  margin: 0;
+  font-size: 24px;
   font-weight: bold;
-  border-radius: 8px;
+}
+
+/* Navigation bar styling */
+.admin-nav {
+  background-color: #34495e; /* Darker navigation background */
+  color: white;
+  padding: 15px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  gap: 15px;
+  justify-content: flex-start; /* Align buttons to the left */
+}
+
+.nav-list li {
+  margin: 0;
+}
+
+.admin-nav button {
+  background-color: transparent;
+  color: #ecf0f1; /* Light text for buttons */
+  border: none;
+  padding: 10px 15px;
+  font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* Hover effect for buttons */
-button:hover {
-  background-color: #2980b9; /* Darker blue */
-  transform: translateY(-2px);
+.admin-nav button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Active effect for buttons */
-button:active {
-  transform: translateY(0);
+.admin-nav button.active {
+  background-color: #18bc9c; /* Highlight for the active button */
+  color: white;
 }
 
-/* Specific button colors for differentiation */
-button:nth-child(1) {
-  background-color: #27ae60; /* Green for Create User */
+/* Main content area */
+.admin-content {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: #fff; /* White content background */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  margin: 20px;
+  border-radius: 8px;
 }
 
-button:nth-child(2) {
-  background-color: #e67e22; /* Orange for Find User */
+/* Footer styling */
+.admin-footer {
+  background-color: #2c3e50;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  font-size: 14px;
 }
 
-button:nth-child(3) {
-  background-color: #9b59b6; /* Purple for Update User */
+/* Icon styling (requires Font Awesome or similar) */
+.fas {
+  margin-right: 5px;
 }
 
-button:nth-child(4) {
-  background-color: #e74c3c; /* Red for Delete User */
-}
-
-button:nth-child(5) {
-  background-color: #1abc9c; /* Teal for Scan User QR */
-}
-
-button:nth-child(6) {
-  background-color: #34495e; /* Dark blue for Registration Log */
-}
-
-/* Responsive design for smaller screens */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .button-container {
-    flex-direction: column;
-    align-items: center;
+  .admin-nav {
+    padding: 10px;
   }
 
-  button {
+  .nav-list {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .admin-nav button {
     width: 100%;
-    margin-bottom: 10px;
+  }
+
+  .admin-content {
+    margin: 10px;
+    padding: 15px;
   }
 }
 </style>
