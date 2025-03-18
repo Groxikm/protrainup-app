@@ -2,8 +2,6 @@
   <div>
     <h2>Change Status Rules</h2>
     <form @submit.prevent="changeRules">
-      <p><strong>Days scope:</strong> </p>
-      <input v-model="query.days_scope" placeholder="Days_scope" required />
       <p><strong>Accepted Attendance %</strong> </p>
       <input v-model="query.attendance" placeholder="Attendance" required />
       <p><strong>Limit of unpaid months:</strong> </p>

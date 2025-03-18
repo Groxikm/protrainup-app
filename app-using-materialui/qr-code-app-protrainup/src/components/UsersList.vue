@@ -3,6 +3,7 @@
     <div class="search-panel">
       <h2>Open User Card by:</h2>
       <form>
+        <!--Change the search panel here to run the search by value in users, and the search to return id, which is then used to receive user via findUserById()     -->
         <input v-model="query.name" placeholder="Name" />
         <input v-model="query.surname" placeholder="Surname" />
         <button @click.prevent="FindAndShowUser" type="submit" class="search-button">Find and Show User</button>
@@ -15,21 +16,25 @@
         <thead>
         <tr>
           <th>#</th>
+          <th>Avatar</th>
           <th>Name</th>
           <th>Surname</th>
           <th>Login</th>
-          <th>Visits</th>
           <th>Team</th>
           <th>Club</th>
           <th>Attendance</th>
           <th>Unpaid months</th>
-          <th>Avatar</th>
           <th>Actions</th>
         </tr>
         </thead>
         <tbody>
         <tr v-for="(user, index) in users" :key="user.id" :class="{ 'editing-row': user.isEditing }">
           <td>{{ index + 1 }}</td>
+          <td>
+            <img v-if="!user.isEditing" :src="formatAvatar(user.avatar_link)" alt="Avatar" width="32" height="32">
+            <div v-if="user.isEditing"><input v-model="editingUser.avatar_link" placeholder="Avatar URL"/></div>
+            <img v-if="!user.isEditing" :src="formatClub(user.club_link)" alt="Club" width="32" height="32">
+          </td>
           <td>
             <div v-if="!user.isEditing">{{ user.name }}</div>
             <div v-if="user.isEditing"><input v-model="editingUser.name" placeholder="Name"/></div>
@@ -39,21 +44,15 @@
             <div v-if="user.isEditing"><input v-model="editingUser.surname" placeholder="Surname"/></div>
           </td>
           <td>{{ user.login }}</td>
-          <td>
-            <div v-if="!user.isEditing">{{ user.visit_frequency }}</div>
-            <div v-if="user.isEditing"><input v-model="editingUser.visit_frequency" placeholder="Visits" type="number"/></div>
-          </td>
           <td>{{ user.team }}</td>
           <td>{{ user.club }}</td>
-          <td>{{ attendanceCalculation(user.visit_frequency) }}</td>
+          <td>
+            <div v-if="!user.isEditing">{{ user.visit_frequency }} %</div>
+            <div v-if="user.isEditing"><input v-model="editingUser.visit_frequency" placeholder="Visits" type="number"/></div>
+          </td>
           <td>
             <div v-if="!user.isEditing">{{ user.backlog }}</div>
             <div v-if="user.isEditing"><input v-model="editingUser.backlog" placeholder="Unpaid months" type="number"/></div>
-          </td>
-          <td>
-            <img v-if="!user.isEditing" :src="formatAvatar(user.avatar_link)" alt="Avatar" width="32" height="32">
-            <div v-if="user.isEditing"><input v-model="editingUser.avatar_link" placeholder="Avatar URL"/></div>
-            <img v-if="!user.isEditing" :src="formatClub(user.club_link)" alt="Club" width="32" height="32">
           </td>
           <td>
             <button
@@ -76,7 +75,7 @@
 </template>
 
 <script>
-import {findRules, findUserByNameSurname, findUsers, checkValidity} from "../api/adminGETService.js";
+import {findUserById, findUsers} from "../api/adminGETService.js";
 import {changeUserData} from "../api/adminPUTService.js";
 
 const user_arr = [];
@@ -88,6 +87,7 @@ export default {
         name: "",
         surname: ""
       },
+      userId_for_search:'',
       calc_rules: {},
       users: [],
       editingUser: null,
@@ -99,7 +99,7 @@ export default {
     };
   },
   async mounted() {
-    console.log(this.users, "THIS USERS");
+    //console.log(this.users, "THIS USERS");
     await this.loadMoreUsers();
     await this.getRules();
   },
@@ -113,7 +113,7 @@ export default {
           return;
         }
 
-        const searchedUser = await findUserByNameSurname(this.query.name, this.query.surname);
+        const searchedUser = await findUserById(this.data.userId_for_search);
         console.log("API Response:", searchedUser);
 
         const searchedUserId = searchedUser.id || (searchedUser.data && searchedUser.data.id);
@@ -210,25 +210,6 @@ export default {
         this.errorMessage = error.message || "Error saving user changes";
       }
     },
-    async getRules() {
-      try {
-        const data = await findRules();
-        this.calc_rules = data;
-
-      } catch (error) {
-
-      }
-
-    },
-    attendanceCalculation(visits){
-      try {
-        return Math.floor((parseFloat(visits) * 100) / parseFloat(this.calc_rules.days_scope));
-      } catch (e) {
-        return null;
-      }
-
-    }
-
   }
 };
 </script>

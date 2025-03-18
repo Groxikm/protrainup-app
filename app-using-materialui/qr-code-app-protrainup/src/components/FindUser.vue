@@ -9,7 +9,7 @@
         <p><strong>Team:</strong> {{ user.team }}</p>
         <p><strong>Login:</strong> {{ user.login }}</p>
         <p><strong>Club:</strong> {{ user.club }}</p>
-        <p><strong>Attendance:</strong> {{ user.attendance }} %</p>
+        <p><strong>Attendance:</strong> {{ user.visit_frequency }} %</p>
         <p><strong>Number of unpaid months:</strong> {{ user.backlog }} </p>
       </div>
       <div class="avatar-container">
@@ -34,11 +34,11 @@
           <input v-model="editData.avatar_link" placeholder="New Avatar" />
         </div>
         <div class="form-group">
-          <p><strong>New Backlog:</strong></p>
+          <p><strong>New Unpaid Months:</strong></p>
           <input v-model="editData.backlog" placeholder="New Backlog" type="number" />
         </div>
         <div class="form-group">
-          <p><strong>New Visits:</strong></p>
+          <p><strong>New Attendance:</strong></p>
           <input v-model="editData.visit_frequency" placeholder="New Visits" type="number" />
         </div>
 
@@ -49,7 +49,7 @@
     <!-- "Pass" Button -->
     <button v-if="showPassButton" class="pass-button" @click="handlePass">Pass</button>
 
-    <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+<!--    <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>-->
 
     <!-- Registration Attempts Table -->
     <div class="reg-attempts-container">
@@ -79,13 +79,14 @@
       <div class="pagination-controls">
         <button
             @click="loadMoreAttempts"
-            :disabled="loadingMore || !hasMoreAttempts"
+            :disabled="loadingMore"
             class="load-more-button"
         >
           {{ loadingMore ? 'Loading...' : 'Load More' }}
         </button>
-        <div v-if="loadMessage" class="error-message">{{ loadMessage }}</div>
+
       </div>
+      <div v-if="loadMessage" class="error-message">{{ loadMessage }}</div>
     </div>
   </div>
 </template>
@@ -134,7 +135,7 @@ export default {
       }
     },
     showPassButton() {
-      if (this.userId)
+      if (this.user)
         return this.status === 'Red' || this.status === 'Orange b' || this.status === 'Orange f';
       else
         return false
@@ -247,6 +248,7 @@ export default {
 
         this.latestDate = data.latestDate;
         this.hasMoreAttempts = true;//data.attempts.length === 20;
+        this.loadMessage = "";
       } catch (error) {
         this.loadMessage = "No more logs exist";
       } finally {

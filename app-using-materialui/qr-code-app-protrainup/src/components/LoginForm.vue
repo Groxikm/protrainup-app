@@ -65,6 +65,7 @@ export default {
         } else {
           if (token || token !== null) {
             this.errorMessage = "Login Failed";
+            localStorage.setItem("acc_token", null);
           }
           //alert(data.message || 'Login failed');
         }
