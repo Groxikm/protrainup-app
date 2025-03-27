@@ -1,7 +1,10 @@
 <template>
   <div class="container">
+    <div v-if="loadingUser" class="loading-view">
+      Loading user data...
+    </div>
     <div
-        v-if="user"
+        v-else-if="user"
         :class="['user-card', statusClass]"
     >
       <div class="user-details">
@@ -34,25 +37,23 @@
           <input v-model="editData.avatar_link" placeholder="New Avatar" />
         </div>
         <div class="form-group">
-          <p><strong>New Unpaid Months:</strong></p>
-          <input v-model="editData.backlog" placeholder="New Backlog" type="number" />
-        </div>
-        <div class="form-group">
           <p><strong>New Attendance:</strong></p>
           <input v-model="editData.visit_frequency" placeholder="New Visits" type="number" />
         </div>
+        <div class="form-group">
+          <p><strong>New Unpaid Months:</strong></p>
+          <input v-model="editData.backlog" placeholder="New Backlog" type="number" />
+        </div>
+
 
         <button @click="updateUser">Save</button>
       </div>
     </div>
+    <div v-else-if="errorMessage" class="error-message">{{ errorMessage }}</div>
 
-    <!-- "Pass" Button -->
-    <button v-if="showPassButton" class="pass-button" @click="handlePass">Pass</button>
+    <button v-if="showPassButton && !loadingUser" class="pass-button" @click="handlePass">Pass</button>
 
-<!--    <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>-->
-
-    <!-- Registration Attempts Table -->
-    <div class="reg-attempts-container">
+    <div v-if="!loadingUser" class="reg-attempts-container">
       <h3>Registration Attempts</h3>
       <table v-if="regAttempts.length > 0" class="reg-attempts-table">
         <thead>
@@ -74,8 +75,6 @@
       </table>
       <div v-else class="no-data-message">No registration attempts found.</div>
 
-      <!-- Pagination Controls -->
-      <!-- {{ loadingMore ? 'Loading...' : 'Load More' }} is currently not adjusted so it's disabled -->
       <div class="pagination-controls">
         <button
             @click="loadMoreAttempts"
@@ -103,8 +102,7 @@ export default {
       validity: false,
       status: "Red",
       user: null,
-      loadMessage: "No logs loaded",
-      errorMessage: "",
+      // User card edition data
       editing: false,
       editData: {
         name: "",
@@ -114,10 +112,14 @@ export default {
         backlog: "",
       },
       // Registration attempts data
-      regAttempts: [],
+      regAttempts:[],
       latestDate: null,
       loadingMore: false,
-      hasMoreAttempts: true
+      hasMoreAttempts: true,
+      loadingUser: false, // NEW: Loading state for user data
+
+      loadMessage: "No logs loaded",
+      errorMessage: "",
     };
   },
   computed: {
@@ -144,12 +146,24 @@ export default {
 
 
   async mounted() {
-    this.userId = localStorage.getItem("last_scanned_id");
-    if (this.userId !== null) {
-      await this.getUserById(this.userId);
-      await this.getValidityStatus(this.userId);
-      await this.getRegAttempts();
-    } else this.errorMessage = "No user ID found.";
+    try
+    {
+      this.userId = localStorage.getItem("last_scanned_id");
+
+    if (this.userId !== null || this.userId !== "") {
+      this.loadingUser = true; // Set loading to true before fetching
+      try {
+        await this.getUserById(this.userId);
+        await this.getValidityStatus(this.userId);
+        await this.getRegAttempts();
+      } finally {
+        this.loadingUser = false;
+      }
+    }
+    } catch(error) {
+      alert("Please, pick the user from the list or scan the QR!");
+      this.$emit('switch-component', 'UsersList');
+    }
   },
 
 
@@ -175,11 +189,11 @@ export default {
       }
     },
 
-    // Editing functionality
+    // Editting functionality
     toggleEdit() {
       this.editing = !this.editing;
       if (this.user) {
-        this.editData = { ...this.user };
+        this.editData = {...this.user};
       }
     },
 
@@ -193,8 +207,7 @@ export default {
         addRegAttempt(userDataJson);
         this.latestDate = null;
         this.getRegAttempts();
-      }
-      catch(error) {
+      } catch (error) {
         this.validity = false;
         this.errorMessage = "Error checking validity";
       }
@@ -225,9 +238,9 @@ export default {
     async deleteUser() {
       try {
         await deleteUser(this.user.id);
-        // clearing local data of the deleted user
+        // clearing local data of the deleted user and switching to the UsersList
         this.user = null;
-        this.$emit('change-stored-userId', "");
+        this.$emit('change-stored-userId', null);
         this.$emit('switch-component', 'UsersList');
       } catch (error) {
         this.errorMessage = error.message || "Error deleting user";
@@ -266,26 +279,42 @@ export default {
 </script>
 
 <style scoped>
-/* Styles for the "Pass" button */
+
 .pass-button {
-  display: block;
-  width: 100px;
-  height: 100px;
-  background-color: #ff5722;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 120px;
+  height: 120px;
+  background-color: #ff9800;
   color: white;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: bold;
   border: none;
   border-radius: 50%;
   margin: 20px auto;
   cursor: pointer;
   text-align: center;
-  line-height: 100px;
-  transition: background-color 0.3s ease;
+  line-height: 1;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .pass-button:hover {
-  background-color: #e64a19;
+  background-color: #f57c00;
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
+
+.pass-button:active {
+  transform: scale(0.95);
+}
+
+.pass-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.5);
+}
+
 
 /* Styles for user card with dynamic shadow based on status */
 .status-green {
@@ -324,19 +353,19 @@ button {
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
- .edit-form {
-   display: flex;
-   flex-direction: column;
-   gap: 12px; /* Space between form groups */
-   width: 100%;
-   max-width: 500px; /* Limit the width for better readability */
-   padding: 20px;
-   margin: 11px auto;
-   background-color: #f9f9f9; /* Light gray background */
-   border: 1px solid #e0e0e0; /* Light border */
-   border-radius: 8px; /* Rounded corners */
-   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow */
- }
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Space between form groups */
+  width: 100%;
+  max-width: 500px; /* Limit the width for better readability */
+  padding: 20px;
+  margin: 11px auto;
+  background-color: #f9f9f9; /* Light gray background */
+  border: 1px solid #e0e0e0; /* Light border */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
 
 .form-group {
   display: flex;
@@ -377,12 +406,14 @@ button {
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
+
 .edit-button {
   background-color: #1976d2;
   color: white;
 
 
 }
+
 .edit-form button:hover {
   background-color: #1976d2;
   transform: translateY(-2px);
@@ -505,5 +536,15 @@ button {
   background-color: #ffebee;
   border-radius: 4px;
   text-align: center;
+}
+
+/* NEW: Loading view styles */
+.loading-view {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px; /* Adjust as needed */
+  font-size: 18px;
+  color: #777;
 }
 </style>

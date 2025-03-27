@@ -2,7 +2,7 @@
   <div class="admin-panel login-panel">
     <header class="admin-header">
       <h1>Login</h1>
-    </header>
+      <div class="clock">{{ clock }}</div> </header>
 
     <main class="admin-content login-content">
       <div class="card">
@@ -27,9 +27,12 @@ import { API_URL } from '../settings';
 export default {
   data() {
     return {
+      id: '',
       username: '',
       password: '',
       errorMessage: '',
+      clock: '', // Data property for the clock
+      intervalId: null, // To store the interval ID for cleanup
     };
   },
 
@@ -38,10 +41,22 @@ export default {
     if (token || token !== null) {
       this.handleLogin(token);
     }
-    this.errorMessage = '';
+    this.updateClock(); // Initialize the clock
+    this.intervalId = setInterval(this.updateClock, 1000); // Update every second
+  },
+
+  beforeUnmount() {
+    clearInterval(this.intervalId); // Clear the interval when the component unmounts
   },
 
   methods: {
+    updateClock() {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      this.clock = `${hours}:${minutes}:${seconds}`;
+    },
     async handleLogin(token = "") {
       try {
         const response = await fetch(`${API_URL}/login`, {
@@ -74,6 +89,7 @@ export default {
             });
           }
         } else {
+          this.errorMessage = data.message;
           if ((token || token !== null) && this.password !== undefined && this.login !== undefined) {
             this.errorMessage = "Login Failed";
             localStorage.setItem("acc_token", null);
@@ -81,7 +97,7 @@ export default {
           //alert(data.message || 'Login failed');
         }
       } catch (error) {
-        console.error('Error during login:', error);
+        this.errorMessage = error;
       }
     },
   },
@@ -89,23 +105,26 @@ export default {
 </script>
 
 <style scoped>
-/* Base styles for the admin panel layout (same as before) */
+
 .admin-panel {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #f4f6f8; /* Light background */
+  background-color: #f4f6f8;
   color: #333;
 }
 
-/* Header styling (same as before) */
+
 .admin-header {
-  background-color: #2c3e50; /* Dark header background */
+  background-color: #2c3e50;
   color: white;
   padding: 20px;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .admin-header h1 {
@@ -114,7 +133,13 @@ export default {
   font-weight: bold;
 }
 
-/* Main content area (same as before, with added class for login content) */
+.admin-header .clock {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+
 .admin-content {
   flex-grow: 1;
   padding: 20px;
@@ -128,10 +153,10 @@ export default {
 }
 
 .login-content {
-  width: 100%; /* Ensure login content takes full width within admin-content */
+  width: 100%;
 }
 
-/* Footer styling (same as before) */
+
 .admin-footer {
   background-color: #2c3e50;
   color: white;
@@ -140,41 +165,41 @@ export default {
   font-size: 14px;
 }
 
-/* Specific styles for the login card */
+
 .card {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 30px; /* Increased padding for better spacing */
-  max-width: 450px; /* Slightly wider */
-  width: 100%; /* Make it responsive within its container */
-  text-align: center; /* Center the form elements */
+  padding: 30px;
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
 }
 
 .card h2 {
-  font-size: 28px; /* Larger heading */
-  color: #2c3e50; /* Darker heading color */
+  font-size: 28px;
+  color: #2c3e50;
   margin-bottom: 25px;
 }
 
 form {
   display: flex;
   flex-direction: column;
-  align-items: stretch; /* Make form elements take full width */
+  align-items: stretch;
 }
 
 input[type="text"],
 input[type="password"] {
-  padding: 12px; /* Increased padding */
+  padding: 12px;
   margin-bottom: 20px;
-  border: 1px solid #ddd; /* Light gray border */
-  border-radius: 6px; /* More rounded corners */
+  border: 1px solid #ddd;
+  border-radius: 6px;
   font-size: 16px;
 }
 
 input[type="text"]:focus,
 input[type="password"]:focus {
-  border-color: #3498db; /* Blue focus color */
+  border-color: #3498db;
   outline: none;
   box-shadow: 0 0 5px rgba(52, 152, 219, 0.3); /* Subtle focus shadow */
 }
@@ -185,7 +210,7 @@ input[type="password"]::placeholder {
 }
 
 button.special-button {
-  background-color: #3498db; /* Blue button color */
+  background-color: #3498db;
   color: #fff;
   border: none;
   padding: 12px 24px;
@@ -197,17 +222,17 @@ button.special-button {
 }
 
 button.special-button:hover {
-  background-color: #2980b9; /* Darker blue on hover */
+  background-color: #2980b9;
 }
 
 .error-message {
-  color: #c0392b; /* Red error color */
+  color: #c0392b;
   margin-top: 15px;
   padding: 12px;
   background-color: #fdecea;
   border-radius: 6px;
   text-align: center;
-  border: 1px solid #e74c3c; /* Subtle red border */
+  border: 1px solid #e74c3c;
 }
 
 /* Responsive adjustments */
@@ -235,6 +260,19 @@ button.special-button:hover {
   button.special-button {
     font-size: 16px;
     padding: 10px 20px;
+  }
+
+  .admin-header {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .admin-header h1 {
+    margin-bottom: 10px;
+  }
+
+  .admin-header .clock {
+    margin-right: 0;
   }
 }
 </style>

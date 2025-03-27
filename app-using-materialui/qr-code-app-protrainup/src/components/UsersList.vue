@@ -9,7 +9,7 @@
             placeholder="Search (club, team, name, surname, login)"
             class="search-input"
         />
-        <button @click.prevent="searchAndShowUser" type="submit" class="search-button">Find and Show User</button>
+        <button @click.prevent="searchAndShowUser" type="submit" class="search-button">Find</button>
         <div v-if="searchUserErrorMessage" class="error-message">{{ searchUserErrorMessage }}</div>
       </form>
     </div>
@@ -194,7 +194,13 @@ export default {
           this.searchUserErrorMessage = "User not found";
         }
       } catch (error) {
-        console.error("Error searching for user:", error);
+          try {
+            console.error("Error searching for user:", error);
+          } catch (error) {
+            console.log("No more users loaded");
+          }
+
+
         this.searchUserErrorMessage = error.message || "Error finding user";
       }
     },
@@ -241,7 +247,11 @@ export default {
         user_arr.push(...data.users);
         console.log(data, this.users, "user arr", user_arr);
       } catch (error) {
-        console.error('Error fetching users:', error);
+        try {
+          console.error("Error searching for user:", error);
+        } catch (error) {
+          console.log("No more users loaded");
+        }
         this.errorMessage = "No more users exist";
       }
     },
@@ -318,7 +328,11 @@ export default {
       try {
         // Add implementation if needed
       } catch (error) {
-        console.error('Error fetching rules:', error);
+        try {
+          console.error("Error searching for user:", error);
+        } catch (error) {
+          console.log("No more users loaded");
+        }
       }
     }
   }
@@ -328,34 +342,44 @@ export default {
 <style scoped>
 /* Search panel styles */
 .search-panel {
+  align-items: flex-start; /* Align items to the start of the container */
   background: white;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   margin-bottom: 20px;
+  flex-direction: column; /* Arrange items vertically */
+  gap: 10px;
+  display: flex;
+  width: 100%; /* Make the search panel take the full width of its parent */
+  box-sizing: border-box; /* Ensure padding and border are included in the width */
 }
 
 .search-panel h2 {
   margin-top: 0;
   color: #333;
   padding-bottom: 10px;
+  width: 100%; /* Make the heading take the full width */
+  text-align: left; /* Align heading to the left */
 }
 
 .search-panel form {
   display: flex;
+  flex-direction: column; /* Arrange form elements vertically */
   gap: 10px;
-  align-items: center;
+  width: 100%; /* Make the form take the full width */
 }
 
 .search-panel input {
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  flex: 1;
+  box-sizing: border-box;
+  width: 100%; /* Make the input take the full width of the form */
 }
 
 .search-input {
-  min-width: 300px;
+  min-width: auto; /* Remove min-width to allow full expansion */
 }
 
 .search-button {
@@ -366,6 +390,7 @@ export default {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
+  width: min-content; /* Adjust width as needed, or set to 100% if you want it full width */
 }
 
 .search-button:hover {

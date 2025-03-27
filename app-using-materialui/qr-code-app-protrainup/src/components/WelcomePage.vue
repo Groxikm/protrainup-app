@@ -2,7 +2,7 @@
   <div class="admin-panel">
     <header class="admin-header">
       <h1>Welcome</h1>
-      <button @click="logout" class="logout-button">
+      <span>{{ clock }}</span><button @click="logout" class="logout-button">
         <i class="fas fa-sign-out-alt"></i> Logout
       </button>
     </header>
@@ -17,6 +17,16 @@
           <h3>Your ID as QR Code:</h3>
           <qrcode-vue :value="user.id" :size="250" level="M" />
         </div>
+
+        <button @click="toggleStatus" class="status-button">
+          <i class="fas fa-info-circle"></i> View Status
+        </button>
+
+        <div v-if="showStatus" class="status-container" :class="statusClass">
+          <strong v-if="!loadingStatus">Status: </strong>
+          <span v-if="!loadingStatus">{{ statusMessage }}</span>
+          <span v-else class="loading-indicator">Loading status...</span>
+        </div>
       </div>
     </main>
 
@@ -28,6 +38,7 @@
 
 <script>
 import QrcodeVue from "qrcode.vue";
+import { checkValidity } from "../api/adminGETService.js";
 
 export default {
   name: "WelcomePage",
@@ -41,13 +52,82 @@ export default {
         name: this.$route.query.name || "",
         surname: this.$route.query.surname || "",
       },
+      recievedStatus: null, // Initialize to null to indicate no status so far
+      showStatus: false,
+      errorMessage: "",
+      loadingStatus: false,
+
+      clock: '',
+      intervalId: null,
     };
   },
+  computed: {
+    statusMessage() {
+      if (this.recievedStatus === null) {
+        return ""; // Or a default message if needed
+      }
+      switch (this.recievedStatus) {
+        case "Red":
+          return "Your payment and attendance requirements are unfulfilled";
+        case "Orange b":
+          return "You have month(s) unpaid.";
+        case "Orange f":
+          return "Your attendance is low.";
+        case "Green":
+          return "All good!";
+        default:
+          return "Status unavailable.";
+      }
+    },
+    statusClass() {
+      return this.recievedStatus ? `status-${this.recievedStatus.toLowerCase().replace(' ', '-')}` : '';
+    },
+  },
+
+  mounted() {
+    this.updateClock();
+    this.intervalId = setInterval(this.updateClock, 1000);
+  },
+
+  beforeUnmount() {
+    clearInterval(this.intervalId);
+  },
+
   methods: {
     logout() {
       console.log('Logging out...');
       localStorage.removeItem('acc_token');
       this.$router.push('/'); // Redirect to the login page
+    },
+    toggleStatus() {
+      this.showStatus = !this.showStatus;
+      if (this.showStatus && !this.recievedStatus && !this.loadingStatus) {
+        this.getValidityStatus();
+      }
+    },
+    async getValidityStatus() {
+      this.loadingStatus = true;
+      this.recievedStatus = null;
+      try {
+        const userId = this.user.id;
+        console.log(userId, localStorage.getItem("acc_token"));
+        const data = await checkValidity(userId);
+        this.recievedStatus = data.status;
+      } catch (error) {
+        this.errorMessage = error.message || "Error checking validity";
+        console.error("Error checking validity:", error);
+        this.recievedStatus = "unavailable"; // Set a status even on error
+      } finally {
+        this.loadingStatus = false; // Set loading to false after the API call completes (success or error)
+      }
+    },
+
+    updateClock() {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      this.clock = `${hours}:${minutes}:${seconds}`;
     },
   },
 };
@@ -182,5 +262,70 @@ export default {
   font-size: 20px;
   color: #555;
   margin-bottom: 15px;
+}
+
+/* Status Button */
+.status-button {
+  background-color: #007bff; /* Blue color */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px; /* Space from QR code */
+}
+
+.status-button:hover {
+  background-color: #0056b3;
+}
+
+/* Status Container */
+.status-container {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.status-red {
+  background-color: #ffebee;
+  color: #d32f2f;
+  border: 1px solid #d32f2f;
+}
+
+.status-orange-b {
+  background-color: #fff3e0;
+  color: #ff9800;
+  border: 1px solid #ff9800;
+}
+
+.status-orange-f {
+  background-color: #fff3e0;
+  color: #ff9800;
+  border: 1px solid #ff9800;
+}
+
+.status-green {
+  background-color: #e8f5e9;
+  color: #4caf50;
+  border: 1px solid #4caf50;
+}
+
+.status-unavailable {
+  background-color: #f5f5f5;
+  color: #757575;
+  border: 1px solid #757575;
+}
+
+/* Loading Indicator */
+.loading-indicator {
+  color: #777; /* Grey color for loading text */
+  font-style: italic;
 }
 </style>

@@ -2,7 +2,7 @@
   <div class="admin-panel">
     <header class="admin-header">
       <h1>Manage Users</h1>
-      <button @click="logout" class="logout-button">
+      <span><div class="clock">{{ clock }}</div></span><button @click="logout" class="logout-button">
         <i class="fas fa-sign-out-alt"></i> Logout
       </button>
     </header>
@@ -83,9 +83,20 @@ export default {
       attempts:[],
       latestDateId: null,
       hasMore: true,
-      currentComponent: 'UsersList'
+      currentComponent: 'UsersList',
+      clock: '',
+      intervalId: null,
     };
   },
+  mounted() {
+    this.updateClock();
+    this.intervalId = setInterval(this.updateClock, 1000);
+  },
+
+  beforeUnmount() {
+    clearInterval(this.intervalId);
+  },
+
   methods: {
     handleIdScanned(scannedId) {
       this.userId = scannedId;
@@ -113,6 +124,14 @@ export default {
       }
     },
 
+    updateClock() {
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      this.clock = `${hours}:${minutes}:${seconds}`;
+    },
+
     logout() {
       console.log('Logging out...');
       localStorage.removeItem('acc_token');
@@ -123,7 +142,7 @@ export default {
 </script>
 
 <style scoped>
-/* Base styles for the admin panel layout */
+
 .admin-panel {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   min-height: 100vh;
@@ -266,5 +285,11 @@ export default {
     margin: 10px;
     padding: 15px;
   }
+}
+
+.admin-header .clock {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-right: 10px;
 }
 </style>

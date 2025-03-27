@@ -66,7 +66,7 @@ export default {
       lastLogDate: null,
       isLoading: false,
       errorMessage: "",
-      userCache: {}  // Cache for user data to avoid duplicate API calls
+      userCache: {}
     };
   },
   async mounted() {
@@ -81,7 +81,7 @@ export default {
         const data = await findAllRegAttempts(this.lastLogDate);
         this.lastLogDate = data.latestDate;
 
-        // Create log entries with placeholders for user data
+        // Creating log entries with placeholders for user data
         const logEntries = data.attempts.map(attempt => ({
           ...attempt,
           userData: null
@@ -97,15 +97,20 @@ export default {
 
         this.isLoading = false;
       } catch (error) {
-        console.error("Error fetching logs:", error);
-        this.errorMessage = "No more logs available or an error occurred";
+
+        try {
+          console.error("Error fetching logs:", error);
+        } catch (error) {
+          console.log("No more logs loaded");
+        }
+        this.errorMessage = "No more logs available";
         this.isLoading = false;
       }
     },
 
     async fetchUserData(log) {
       try {
-        // Check if we already have this user in the cache
+        // Check if theres already the user in the cache
         if (this.userCache[log.user_id]) {
           log.userData = this.userCache[log.user_id];
           return;
@@ -121,7 +126,6 @@ export default {
         log.userData = userData;
       } catch (error) {
         console.error(`Error fetching user data for log ${log.id}:`, error);
-        // Keep userData as null to indicate loading failed
       }
     },
 
@@ -138,7 +142,7 @@ export default {
       const statusLower = status.toLowerCase();
 
       if (statusLower.includes('green')) return 'status-green';
-      if (statusLower.includes('orange')) return 'status-orange';
+      if (statusLower.includes('orange f') || statusLower.includes('orange b')) return 'status-orange';
       if (statusLower.includes('red')) return 'status-red';
       if (statusLower.includes('yellow')) return 'status-yellow';
       return 'status-default';
