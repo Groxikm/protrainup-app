@@ -93,7 +93,7 @@
 <script>
 import { findUserById, checkValidity, findUserRegAttempts } from "../api/adminGETService.js";
 import { changeUserData, deleteUser } from "../api/adminPUTService.js";
-import { addRegAttempt} from "../api/adminPOSTService.js";
+import { addRegAttempt } from "../api/adminPOSTService.js";
 
 export default {
   data() {
@@ -128,9 +128,9 @@ export default {
         case 'Green':
           return 'status-green';
         case 'Orange b':
-          return 'status-orange-back';
+          return 'status-orange';
         case 'Orange f':
-          return 'status-orange-front';
+          return 'status-orange';
         case 'Red':
         default:
           return 'status-red';
@@ -146,26 +146,26 @@ export default {
 
 
   async mounted() {
-    try
-    {
-      this.userId = localStorage.getItem("last_scanned_id");
+    this.userId = localStorage.getItem("last_scanned_id");
 
-    if (this.userId !== null || this.userId !== "") {
+    if (this.userId !== null && this.userId !== "" && this.userId !== "null") {
+      //console.log(this.userId !== null , this.userId !== "" , this.userId !== "null");
       this.loadingUser = true; // Set loading to true before fetching
       try {
         await this.getUserById(this.userId);
         await this.getValidityStatus(this.userId);
         await this.getRegAttempts();
       } finally {
+
         this.loadingUser = false;
+
       }
-    }
-    } catch(error) {
+    } else {
       alert("Please, pick the user from the list or scan the QR!");
       this.$emit('switch-component', 'UsersList');
     }
-  },
 
+  },
 
   methods: {
     // Search and load functionality
@@ -197,7 +197,6 @@ export default {
       }
     },
 
-    // Pass button functionality
     handlePass() {
       const userDataJson = {
         "id": this.userId,
@@ -211,7 +210,7 @@ export default {
         this.validity = false;
         this.errorMessage = "Error checking validity";
       }
-      console.log('Pass button clicked');
+      //console.log('Pass button clicked');
     },
 
     // This method handles three input field name, surname, avatar link to run changes in a single click
@@ -325,12 +324,8 @@ export default {
   box-shadow: 0 0 15px rgba(255, 69, 69, 0.5), 0 0 30px rgba(139, 0, 0, 0.3);
 }
 
-.status-orange-back {
-  box-shadow: 0 0 15px rgba(255, 165, 0, 0.5), 0 0 30px rgba(255, 99, 71, 0.3);
-}
-
-.status-orange-front {
-  box-shadow: 0 0 15px rgba(255, 165, 0, 0.5), 0 0 30px rgba(255, 140, 0, 0.3);
+.status-orange {
+  box-shadow: 0 0 15px rgba(255, 69, 69, 0.5), 0 0 30px rgba(70, 190, 10, 0.3);
 }
 
 /* User card base style */

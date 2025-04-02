@@ -62,7 +62,7 @@ export default {
         this.lastUserId = data.lastUserId;
         this.attempts.push(...data.attempts);
         attempts_arr.push(...data.attempts);
-        console.log(data, this.attempts, "att arr", attempts_arr);
+        //console.log(data, this.attempts, "att arr", attempts_arr);
       } catch (error) {
         console.error('Error fetching attempts:', error);
         this.errorMessage = error.message || "Error finding user";

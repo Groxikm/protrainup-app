@@ -269,10 +269,10 @@ export default {
       if (user.isEditing) {
         this.saveUserChanges();
       } else {
-        // Cancel editing for any other user
+        // Cancel editing for others
         this.cancelAllEditing();
 
-        // Set the current user to edit mode
+        // Set the current user to editing mode
         const actualIndex = this.users.findIndex(u => u.id === user.id);
         if (actualIndex !== -1) {
           this.users[actualIndex].isEditing = true;

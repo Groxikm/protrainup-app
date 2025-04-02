@@ -37,7 +37,7 @@ export async function changeUserStatusRules(userData) {
 
 export async function deleteUser(userId) {
     const response = await fetch(`${API_URL}/api/delete-user-by-id?id=${userId}`, {
-        method: 'PUT',
+        method: 'DELETE',
         headers: {
             'accessToken': localStorage.getItem('acc_token'),
         },

@@ -138,13 +138,11 @@ export default {
     },
 
     getStatusClass(status) {
-      // Extract the color from the status string (e.g., "Orange f" -> "orange")
       const statusLower = status.toLowerCase();
 
       if (statusLower.includes('green')) return 'status-green';
-      if (statusLower.includes('orange f') || statusLower.includes('orange b')) return 'status-orange';
+      if (statusLower.includes('orange')) return 'status-orange';
       if (statusLower.includes('red')) return 'status-red';
-      if (statusLower.includes('yellow')) return 'status-yellow';
       return 'status-default';
     }
   }
@@ -226,17 +224,12 @@ export default {
 }
 
 .status-orange {
-  color: #FF9800;
+  color: orange;
   font-weight: bold;
 }
 
 .status-red {
   color: #F44336;
-  font-weight: bold;
-}
-
-.status-yellow {
-  color: #FFEB3B;
   font-weight: bold;
 }
 

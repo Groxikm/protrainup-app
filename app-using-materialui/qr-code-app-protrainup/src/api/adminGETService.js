@@ -71,7 +71,11 @@ export async function findUserRegAttempts(userId, latestDate, limit = PAGINATION
         throw new Error('Bad response');
     }
 
-    const data = await response.json();
+    let data = await response.json();
+    if(response.status === 204){
+        data = null;
+    }
+
 
     return data
 }
@@ -88,8 +92,10 @@ export async function findAllRegAttempts(latestDate, limit = PAGINATION_LIMIT){
         throw new Error('Bad response');
     }
 
-    const data = await response.json();
-
+    let data = await response.json();
+    if(response.status === 204){
+        data = null;
+    }
     return data
 }
 
@@ -105,7 +111,10 @@ export async function findUsers(latestDate, limit  = PAGINATION_LIMIT){
         throw new Error('Bad response');
     }
 
-    const data = await response.json();
+    let data = await response.json();
+    if(response.status === 204){
+        data = null;
+    }
 
     return data
 }
